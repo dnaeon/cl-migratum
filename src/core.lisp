@@ -18,6 +18,7 @@
    :driver-init
    :list-applied
    :register-migration
+   :apply-migration
    :list-pending))
 (in-package :cl-migratum.core)
 
@@ -74,6 +75,9 @@
 
 (defgeneric register-migration (driver migration &key)
   (:documentation "Registers a successfully applied migration"))
+
+(defgeneric apply-migration (driver migration &key)
+  (:documentation "Applies a single migration using the given driver"))
 
 (defgeneric list-pending (driver &key)
   (:documentation "Returns the list of pending (not applied yet) migrations"))
