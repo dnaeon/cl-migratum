@@ -14,7 +14,8 @@
    :create-migration)
   (:export
    :local-path-provider
-   :local-path-migration))
+   :local-path-migration
+   :make-local-path-provider))
 (in-package :cl-migratum.provider.local-path)
 
 (defconstant *migration-file-regex*
@@ -32,6 +33,12 @@
     :initarg :path
     :initform (error "Must specify path")))
   (:documentation "Provider for discovering migrations from a local path"))
+
+(defun make-local-path-provider (path)
+  "Creates a local path provider using the given path"
+  (make-instance 'local-path-provider
+		 :name "local-path"
+		 :path path))
 
 (defmethod list-migrations ((provider local-path-provider) &key)
   (with-slots (path) provider
