@@ -7,7 +7,12 @@
    :base-provider
    :list-migrations
    :load-migration
-   :create-migration))
+   :create-migration
+   :base-driver
+   :init
+   :applied
+   :register
+   :pending))
 (in-package :cl-migratum.core)
 
 (defclass migration ()
@@ -38,3 +43,25 @@
 
 (defgeneric create-migration (provider &optional id description content)
   (:documentation "Creates a new migration resource using the given provider"))
+
+(defclass base-driver ()
+  ((name
+    :type string
+    :initarg :name
+    :initform (error "Must specify driver name"))
+   (provider
+    :initarg :provider
+    :initform (error "Must specify migrations provider")))
+  (:documentation "Base class for migration drivers"))
+
+(defgeneric init (driver &key)
+  (:documentation "Initializes the driver, e.g. creates required schema"))
+
+(defgeneric applied (driver &key)
+  (:documentation "Returns a list of the applied migrations"))
+
+(defgeneric register (driver migration &key)
+  (:documentation "Registers a successfully applied migration"))
+
+(defgeneric pending (driver &key)
+  (:documentation "Returns the list of pending (not applied yet) migrations"))
