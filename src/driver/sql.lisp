@@ -5,12 +5,17 @@
   (:import-from
    :cl-migratum.core
    :migration
+   :migration-id
+   :migration-description
    :base-driver
    :driver-name
    :driver-init
+   :driver-provider
+   :apply-migration
    :list-applied
    :list-pending
-   :register-migration)
+   :register-migration
+   :load-migration)
   (:import-from :log4cl)
   (:import-from :cl-dbi)
   (:export
@@ -62,3 +67,11 @@ CREATE TABLE IF NOT EXISTS migration (
 	 (query (cl-dbi:prepare connection "INSERT INTO migration (id, description) VALUES (?, ?)")))
     (cl-dbi:with-transaction connection
       (cl-dbi:execute query (list id description)))))
+
+(defmethod apply-migration ((driver sql-driver) (migration migration) &key)
+  (log:info "Applying migration: ~a - ~a" (migration-id migration) (migration-description migration))
+  (let* ((connection (driver-connection driver))
+	 (content (load-migration (driver-provider driver) migration))
+	 (query (cl-dbi:prepare connection (string-trim #(#\Newline) content))))
+    (cl-dbi:with-transaction connection
+      (cl-dbi:execute query))))
