@@ -18,8 +18,8 @@
    :make-local-path-provider))
 (in-package :cl-migratum.provider.local-path)
 
-(defconstant *migration-file-regex*
-  "(\\d{14})-(.*)\.sql"
+(defparameter *migration-file-regex*
+  "(\\d{14})-(.*)\.sql$"
   "Regex used to match migration files")
 
 (defclass local-path-migration (migration)
