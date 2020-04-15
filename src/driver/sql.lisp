@@ -38,7 +38,8 @@ CREATE TABLE IF NOT EXISTS migration (
   (log:info "Initializing ~a driver" (driver-name driver))
   (let* ((connection (driver-connection driver))
          (query (cl-dbi:prepare connection *sql-init-schema*)))
-    (cl-dbi:execute query)))
+    (cl-dbi:with-transaction connection
+      (cl-dbi:execute query))))
 
 (defmethod list-applied ((driver sql-driver) &key)
   (log:debug "Fetching list of applied migrations")
