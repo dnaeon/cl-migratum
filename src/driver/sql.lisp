@@ -53,3 +53,12 @@ CREATE TABLE IF NOT EXISTS migration (
                              :description (getf row :|description|)
                              :applied (getf row :|applied|)))
             rows)))
+
+(defmethod register-migration ((driver sql-driver) (migration migration) &key)
+  (log:debug "Registering migration as successful: ~a" (migration-id migration))
+  (let* ((connection (driver-connection driver))
+	 (id (migration-id migration))
+	 (description (migration-description migration))
+	 (query (cl-dbi:prepare connection "INSERT INTO migration (id, description) VALUES (?, ?)")))
+    (cl-dbi:with-transaction connection
+      (cl-dbi:execute query (list id description)))))
