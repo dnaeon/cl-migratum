@@ -17,7 +17,7 @@
    :local-path-migration))
 (in-package :cl-migratum.provider.local-path)
 
-(defconstant +migration-file-regex+
+(defconstant *migration-file-regex*
   "(\\d{14})-(.*)\.sql"
   "Regex used to match migration files")
 
@@ -36,7 +36,7 @@
 (defmethod list-migrations ((provider local-path-provider) &key)
   (with-slots (path) provider
     (let* ((files (uiop:directory-files path))
-	   (scanner (cl-ppcre:create-scanner +migration-file-regex+))
+	   (scanner (cl-ppcre:create-scanner *migration-file-regex*))
 	   (result nil))
       (dolist (file files)
 	(cl-ppcre:register-groups-bind (id description)
