@@ -39,3 +39,16 @@ CREATE TABLE IF NOT EXISTS migration (
   (let* ((connection (driver-connection driver))
          (query (cl-dbi:prepare connection *sql-init-schema*)))
     (cl-dbi:execute query)))
+
+(defmethod list-applied ((driver sql-driver) &key)
+  (log:debug "Fetching list of applied migrations")
+  (let* ((connection (driver-connection driver))
+         (query (cl-dbi:prepare connection "SELECT * FROM migration"))
+         (result (cl-dbi:execute query))
+         (rows (cl-dbi:fetch-all result)))
+    (mapcar (lambda (row)
+              (make-instance 'migration
+                             :id (getf row :|id|)
+                             :description (getf row :|description|)
+                             :applied (getf row :|applied|)))
+            rows)))
