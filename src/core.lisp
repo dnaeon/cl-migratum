@@ -15,10 +15,10 @@
    :base-driver
    :driver-name
    :driver-provider
-   :init
-   :applied
-   :register
-   :pending))
+   :driver-init
+   :list-applied
+   :register-migration
+   :list-pending))
 (in-package :cl-migratum.core)
 
 (defclass migration ()
@@ -66,14 +66,14 @@
     :accessor driver-provider))
   (:documentation "Base class for migration drivers"))
 
-(defgeneric init (driver &key)
+(defgeneric driver-init (driver &key)
   (:documentation "Initializes the driver, e.g. creates required schema"))
 
-(defgeneric applied (driver &key)
+(defgeneric list-applied (driver &key)
   (:documentation "Returns a list of the applied migrations"))
 
-(defgeneric register (driver migration &key)
+(defgeneric register-migration (driver migration &key)
   (:documentation "Registers a successfully applied migration"))
 
-(defgeneric pending (driver &key)
+(defgeneric list-pending (driver &key)
   (:documentation "Returns the list of pending (not applied yet) migrations"))
