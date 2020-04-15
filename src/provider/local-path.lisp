@@ -48,3 +48,26 @@
 (defmethod load-migration ((provider local-path-provider) (migration local-path-migration) &key)
   (with-slots (path) migration
     (uiop:read-file-string path)))
+
+(defmethod create-migration ((provider local-path-provider) &key id description content)
+  (let* ((provider-path (slot-value provider 'path))
+	 (now (local-time:now))
+	 (year (format nil "~d" (local-time:timestamp-year now)))
+	 (month (format nil "~2,'0d" (local-time:timestamp-month now)))
+	 (day (format nil "~2,'0d" (local-time:timestamp-day now)))
+	 (hour (format nil "~2,'0d" (local-time:timestamp-hour now)))
+	 (minute (format nil "~2,'0d" (local-time:timestamp-minute now)))
+	 (sec (format nil "~2,'0d" (local-time:timestamp-second now)))
+	 (timestamp-id (format nil "~a~a~a~a~a~a" year month day hour minute sec))
+	 (id (or id timestamp-id))
+	 (description (or description "new-migration"))
+	 (content (or content ""))
+	 (file-name (format nil "~a-~a" id description))
+	 (file-path (make-pathname :name file-name :type "sql" :directory `(:relative ,(namestring provider-path)))))
+    (with-open-file (out file-path :direction :output)
+      (write-string content out))
+    (make-instance 'local-path-migration
+		   :id (parse-integer id)
+		   :description description
+		   :path file-path
+		   :applied nil)))
