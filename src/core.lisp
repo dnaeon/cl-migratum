@@ -38,6 +38,9 @@
     :accessor migration-applied))
   (:documentation "Base class for migration resources"))
 
+(defgeneric load-migration (migration &key)
+  (:documentation "Returns the contents of the migration resource"))
+
 (defclass base-provider ()
   ((name
     :type string
@@ -48,9 +51,6 @@
 
 (defgeneric list-migrations (provider &key)
   (:documentation "Returns the list of migration resources discovered by the provider"))
-
-(defgeneric load-migration (provider migration &key)
-  (:documentation "Returns the contents of the migration resource using the given provider"))
 
 (defgeneric create-migration (provider &key id description content)
   (:documentation "Creates a new migration resource using the given provider"))
