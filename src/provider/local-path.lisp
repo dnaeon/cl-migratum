@@ -2,12 +2,16 @@
 (defpackage :cl-migratum.provider.local-path
   (:use :cl)
   (:nicknames :migratum.provider.local-path)
+  (:import-from :local-time)
   (:import-from :cl-ppcre)
   (:import-from :uiop)
   (:import-from
    :cl-migratum.core
    :base-provider
-   :migration)
+   :migration
+   :list-migrations
+   :load-migration
+   :create-migration)
   (:export
    :local-path-provider
    :local-path-migration))
