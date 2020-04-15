@@ -44,3 +44,7 @@
 			       :path file)
 		result)))
       result)))
+
+(defmethod load-migration ((provider local-path-provider) (migration local-path-migration) &key)
+  (with-slots (path) migration
+    (uiop:read-file-string path)))
