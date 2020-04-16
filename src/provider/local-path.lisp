@@ -13,7 +13,8 @@
    :migration-id
    :list-migrations
    :load-migration
-   :create-migration)
+   :create-migration
+   :make-migration-id)
   (:export
    :local-path-provider
    :local-path-migration
@@ -71,15 +72,7 @@
 (defmethod create-migration ((provider local-path-provider) &key id description content)
   (log:debug "Creating new migration in path ~a" (local-path-provider-path provider))
   (let* ((provider-path (slot-value provider 'path))
-         (now (local-time:now))
-         (year (format nil "~d" (local-time:timestamp-year now)))
-         (month (format nil "~2,'0d" (local-time:timestamp-month now)))
-         (day (format nil "~2,'0d" (local-time:timestamp-day now)))
-         (hour (format nil "~2,'0d" (local-time:timestamp-hour now)))
-         (minute (format nil "~2,'0d" (local-time:timestamp-minute now)))
-         (sec (format nil "~2,'0d" (local-time:timestamp-second now)))
-         (timestamp-id (parse-integer (format nil "~a~a~a~a~a~a" year month day hour minute sec)))
-         (id (or id timestamp-id))
+         (id (or id (make-migration-id)))
          (description (or description "new-migration"))
          (content (or content ""))
          (file-name (format nil "~a-~a" id description))

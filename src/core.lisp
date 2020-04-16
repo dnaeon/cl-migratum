@@ -26,7 +26,8 @@
    :display-applied
    :apply-pending
    :contains-applied-migrations-p
-   :apply-and-register))
+   :apply-and-register
+   :make-migration-id))
 (in-package :cl-migratum.core)
 
 (defclass migration ()
@@ -149,3 +150,16 @@
     (log:info "Found ~a pending migration(s) to be applied" (length pending))
     (dolist (migration pending)
       (apply-and-register driver migration))))
+
+(defun make-migration-id ()
+  "Creates a new migration id"
+  (let* ((now (local-time:now))
+         (year (format nil "~d" (local-time:timestamp-year now)))
+         (month (format nil "~2,'0d" (local-time:timestamp-month now)))
+         (day (format nil "~2,'0d" (local-time:timestamp-day now)))
+         (hour (format nil "~2,'0d" (local-time:timestamp-hour now)))
+         (minute (format nil "~2,'0d" (local-time:timestamp-minute now)))
+         (sec (format nil "~2,'0d" (local-time:timestamp-second now)))
+         (timestamp-id (parse-integer (format nil "~a~a~a~a~a~a" year month day hour minute sec))))
+    timestamp-id))
+
