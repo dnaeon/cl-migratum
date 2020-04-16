@@ -87,6 +87,11 @@
   "Returns the latest applied migration"
   (first (list-applied driver)))
 
+(defun contains-applied-migrations-p (driver)
+  "Predicate for testing whether we have any migrations applied"
+  (when (latest-migration driver)
+    t))
+
 (defun list-pending (driver)
   "Returns the list of migrations that have not been applied yet"
   (let* ((latest-migration (latest-migration driver))
