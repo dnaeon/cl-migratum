@@ -83,3 +83,14 @@
 (defun latest-migration (driver &rest rest)
   "Returns the latest applied migration"
   (first (apply #'list-applied driver rest)))
+
+(defun list-pending (driver &rest rest)
+  "Returns the list of migrations that have not been applied yet"
+  (let* ((latest-migration (apply #'latest-migration driver rest))
+         (latest-migration-id (migration-id latest-migration))
+         (provider (driver-provider driver))
+         (provided-migrations (list-migrations provider)))
+    (remove-if-not (lambda (migration)
+                     (> (migration-id migration) latest-migration-id))
+                   provided-migrations)))
+
