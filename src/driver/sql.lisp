@@ -20,7 +20,8 @@
   (:import-from :cl-dbi)
   (:export
    :sql-driver
-   :driver-connection))
+   :sql-driver-connection
+   :make-sql-driver))
 (in-package :cl-migratum.driver.sql)
 
 (defparameter *sql-init-schema*
@@ -75,3 +76,10 @@ CREATE TABLE IF NOT EXISTS migration (
          (query (cl-dbi:prepare connection (string-trim #(#\Newline) content))))
     (cl-dbi:with-transaction connection
       (cl-dbi:execute query))))
+
+(defun make-sql-driver (provider connection)
+  "Creates a driver for performing migrations against a SQL database"
+  (make-instance 'sql-driver
+                 :name "SQL"
+                 :provider provider
+                 :connection connection))
