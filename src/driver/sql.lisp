@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS migration (
 (defmethod list-applied ((driver sql-driver) &key)
   (log:debug "Fetching list of applied migrations")
   (let* ((connection (driver-connection driver))
-         (query (cl-dbi:prepare connection "SELECT * FROM migration"))
+         (query (cl-dbi:prepare connection "SELECT * FROM migration ORDER BY id DESC"))
          (result (cl-dbi:execute query))
          (rows (cl-dbi:fetch-all result)))
     (mapcar (lambda (row)

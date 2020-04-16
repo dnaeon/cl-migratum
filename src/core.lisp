@@ -71,7 +71,7 @@
   (:documentation "Initializes the driver, e.g. creates required schema"))
 
 (defgeneric list-applied (driver &key)
-  (:documentation "Returns a list of the applied migrations"))
+  (:documentation "Returns a list of the applied migrations in descending order"))
 
 (defgeneric register-migration (driver migration &key)
   (:documentation "Registers a successfully applied migration"))
