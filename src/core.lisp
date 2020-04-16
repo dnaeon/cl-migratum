@@ -87,18 +87,19 @@
   "Returns the latest applied migration"
   (first (apply #'list-applied driver rest)))
 
-(defun list-pending (driver &rest rest)
+(defun list-pending (driver)
   "Returns the list of migrations that have not been applied yet"
-  (let* ((latest-migration (apply #'latest-migration driver rest))
-         (latest-migration-id (migration-id latest-migration))
+  (let* ((latest-migration (latest-migration driver))
+         (latest-migration-id (or (and latest-migration
+                                       (migration-id latest-migration))
+                                  -1))
          (provider (driver-provider driver))
          (provided-migrations (list-migrations provider)))
     (sort (remove-if-not (lambda (migration)
                            (> (migration-id migration) latest-migration-id))
                          provided-migrations)
           #'<
-          :key (lambda (item)
-                 (migration-id item)))))
+          :key #'migration-id)))
 
 (defun display-pending (driver &rest rest)
   "Display the pending migrations in a table"
