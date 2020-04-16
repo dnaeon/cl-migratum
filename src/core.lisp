@@ -83,9 +83,9 @@
 (defgeneric apply-migration (driver migration &key)
   (:documentation "Applies a single migration using the given driver"))
 
-(defun latest-migration (driver &rest rest)
+(defun latest-migration (driver)
   "Returns the latest applied migration"
-  (first (apply #'list-applied driver rest)))
+  (first (list-applied driver)))
 
 (defun list-pending (driver)
   "Returns the list of migrations that have not been applied yet"
@@ -101,9 +101,9 @@
           #'<
           :key #'migration-id)))
 
-(defun display-pending (driver &rest rest)
+(defun display-pending (driver)
   "Display the pending migrations in a table"
-  (let ((pending (apply #'list-pending driver rest))
+  (let ((pending (list-pending driver))
         (table (ascii-table:make-table (list "ID" "DESCRIPTION") :header "PENDING MIGRATIONS")))
     (dolist (migration pending)
       (ascii-table:add-row table (list (migration-id migration)
@@ -112,9 +112,9 @@
     (ascii-table:add-row table (list "TOTAL" (length pending)))
     (ascii-table:display table)))
 
-(defun display-applied (driver &rest rest)
+(defun display-applied (driver)
   "Displays the applied migrations in a table"
-  (let ((applied (apply #'list-applied driver rest))
+  (let ((applied (list-applied driver))
         (table (ascii-table:make-table (list "ID" "DESCRIPTION" "APPLIED") :header "APPLIED MIGRATIONS")))
     (dolist (migration applied)
       (ascii-table:add-row table (list (migration-id migration)
