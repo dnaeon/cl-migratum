@@ -16,7 +16,7 @@
    :list-pending
    :register-migration
    :load-migration)
-  (:import-from :log4cl)
+  (:import-from :log)
   (:import-from :cl-dbi)
   (:export
    :sql-driver

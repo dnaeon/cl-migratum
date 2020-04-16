@@ -2,6 +2,7 @@
 (defpackage :cl-migratum.provider.local-path
   (:use :cl)
   (:nicknames :migratum.provider.local-path)
+  (:import-from :log)
   (:import-from :local-time)
   (:import-from :cl-ppcre)
   (:import-from :uiop)
