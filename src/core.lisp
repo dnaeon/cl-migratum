@@ -22,7 +22,8 @@
    :apply-migration
    :list-pending
    :latest-migration
-   :display-pending))
+   :display-pending
+   :display-applied))
 (in-package :cl-migratum.core)
 
 (defclass migration ()
@@ -100,11 +101,24 @@
                  (migration-id item)))))
 
 (defun display-pending (driver &rest rest)
-  "Display the pending migration in a table"
+  "Display the pending migrations in a table"
   (let ((pending (apply #'list-pending driver rest))
-	(table (ascii-table:make-table (list "ID" "DESCRIPTION") :header "PENDING MIGRATIONS")))
+        (table (ascii-table:make-table (list "ID" "DESCRIPTION") :header "PENDING MIGRATIONS")))
     (dolist (migration pending)
-      (ascii-table:add-row table (list (migration-id migration) (migration-description migration))))
+      (ascii-table:add-row table (list (migration-id migration)
+                                       (migration-description migration))))
     (ascii-table:add-separator table)
     (ascii-table:add-row table (list "TOTAL" (length pending)))
+    (ascii-table:display table)))
+
+(defun display-applied (driver &rest rest)
+  "Displays the applied migrations in a table"
+  (let ((applied (apply #'list-applied driver rest))
+        (table (ascii-table:make-table (list "ID" "DESCRIPTION" "APPLIED") :header "APPLIED MIGRATIONS")))
+    (dolist (migration applied)
+      (ascii-table:add-row table (list (migration-id migration)
+                                       (migration-description migration)
+                                       (migration-applied migration))))
+    (ascii-table:add-separator table)
+    (ascii-table:add-row table (list "" "TOTAL" (length applied)))
     (ascii-table:display table)))
