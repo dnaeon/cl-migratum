@@ -90,7 +90,9 @@
          (latest-migration-id (migration-id latest-migration))
          (provider (driver-provider driver))
          (provided-migrations (list-migrations provider)))
-    (remove-if-not (lambda (migration)
-                     (> (migration-id migration) latest-migration-id))
-                   provided-migrations)))
-
+    (sort (remove-if-not (lambda (migration)
+                           (> (migration-id migration) latest-migration-id))
+                         provided-migrations)
+          #'<
+          :key (lambda (item)
+                 (migration-id item)))))
