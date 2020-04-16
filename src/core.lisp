@@ -19,7 +19,8 @@
    :list-applied
    :register-migration
    :apply-migration
-   :list-pending))
+   :list-pending
+   :latest-migration))
 (in-package :cl-migratum.core)
 
 (defclass migration ()
@@ -79,5 +80,6 @@
 (defgeneric apply-migration (driver migration &key)
   (:documentation "Applies a single migration using the given driver"))
 
-(defgeneric list-pending (driver &key)
-  (:documentation "Returns the list of pending (not applied yet) migrations"))
+(defun latest-migration (driver &rest rest)
+  "Returns the latest applied migration"
+  (first (apply #'list-applied driver rest)))
