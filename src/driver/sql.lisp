@@ -35,20 +35,20 @@ CREATE TABLE IF NOT EXISTS migration (
 (defclass sql-driver (base-driver)
   ((connection
     :initarg :connection
-    :accessor driver-connection
+    :accessor sql-driver-connection
     :initform (error "Must specify database connection")))
   (:documentation "Driver for performing SQL migrations"))
 
 (defmethod driver-init ((driver sql-driver) &key)
-  (log:info "Initializing ~a driver" (driver-name driver))
-  (let* ((connection (driver-connection driver))
+  (log:debug "Initializing ~a driver" (driver-name driver))
+  (let* ((connection (sql-driver-connection driver))
          (query (cl-dbi:prepare connection *sql-init-schema*)))
     (cl-dbi:with-transaction connection
       (cl-dbi:execute query))))
 
 (defmethod list-applied ((driver sql-driver) &key)
   (log:debug "Fetching list of applied migrations")
-  (let* ((connection (driver-connection driver))
+  (let* ((connection (sql-driver-connection driver))
          (query (cl-dbi:prepare connection "SELECT * FROM migration ORDER BY id DESC"))
          (result (cl-dbi:execute query))
          (rows (cl-dbi:fetch-all result)))
@@ -61,17 +61,17 @@ CREATE TABLE IF NOT EXISTS migration (
 
 (defmethod register-migration ((driver sql-driver) (migration migration) &key)
   (log:debug "Registering migration as successful: ~a" (migration-id migration))
-  (let* ((connection (driver-connection driver))
-	 (id (migration-id migration))
-	 (description (migration-description migration))
-	 (query (cl-dbi:prepare connection "INSERT INTO migration (id, description) VALUES (?, ?)")))
+  (let* ((connection (sql-driver-connection driver))
+         (id (migration-id migration))
+         (description (migration-description migration))
+         (query (cl-dbi:prepare connection "INSERT INTO migration (id, description) VALUES (?, ?)")))
     (cl-dbi:with-transaction connection
       (cl-dbi:execute query (list id description)))))
 
 (defmethod apply-migration ((driver sql-driver) (migration migration) &key)
-  (log:info "Applying migration: ~a - ~a" (migration-id migration) (migration-description migration))
-  (let* ((connection (driver-connection driver))
-	 (content (load-migration migration))
-	 (query (cl-dbi:prepare connection (string-trim #(#\Newline) content))))
+  (log:debug "Applying migration: ~a - ~a" (migration-id migration) (migration-description migration))
+  (let* ((connection (sql-driver-connection driver))
+         (content (load-migration migration))
+         (query (cl-dbi:prepare connection (string-trim #(#\Newline) content))))
     (cl-dbi:with-transaction connection
       (cl-dbi:execute query))))
