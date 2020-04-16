@@ -2,6 +2,7 @@
 (defpackage :cl-migratum.core
   (:use :cl)
   (:nicknames :migratum.core)
+  (:import-from :ascii-table)
   (:export
    :migration
    :migration-id
@@ -20,7 +21,8 @@
    :register-migration
    :apply-migration
    :list-pending
-   :latest-migration))
+   :latest-migration
+   :display-pending))
 (in-package :cl-migratum.core)
 
 (defclass migration ()
@@ -96,3 +98,13 @@
           #'<
           :key (lambda (item)
                  (migration-id item)))))
+
+(defun display-pending (driver &rest rest)
+  "Display the pending migration in a table"
+  (let ((pending (apply #'list-pending driver rest))
+	(table (ascii-table:make-table (list "ID" "DESCRIPTION") :header "PENDING MIGRATIONS")))
+    (dolist (migration pending)
+      (ascii-table:add-row table (list (migration-id migration) (migration-description migration))))
+    (ascii-table:add-separator table)
+    (ascii-table:add-row table (list "TOTAL" (length pending)))
+    (ascii-table:display table)))
