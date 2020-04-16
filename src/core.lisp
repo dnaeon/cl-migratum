@@ -41,6 +41,7 @@
     :accessor migration-description)
    (applied
     :initarg :applied
+    :initform nil
     :accessor migration-applied))
   (:documentation "Base class for migration resources"))
 
