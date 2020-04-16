@@ -23,7 +23,9 @@
    :list-pending
    :latest-migration
    :display-pending
-   :display-applied))
+   :display-applied
+   :apply-pending
+   :contains-applied-migrations-p))
 (in-package :cl-migratum.core)
 
 (defclass migration ()
