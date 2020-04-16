@@ -128,3 +128,14 @@
     (ascii-table:add-separator table)
     (ascii-table:add-row table (list "" "TOTAL" (length applied)))
     (ascii-table:display table)))
+
+(defun apply-pending (driver)
+  "Applies the pending migrations"
+  (let ((pending (list-pending driver)))
+    (log:info "Found ~a pending migration(s) to be applied" (length pending))
+    (dolist (migration pending)
+      (log:info "Applying migration ~a - ~a"
+                (migration-id migration)
+                (migration-description migration))
+      (apply-migration driver migration)
+      (register-migration driver migration))))
