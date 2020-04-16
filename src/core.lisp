@@ -117,7 +117,8 @@
                                        (migration-description migration))))
     (ascii-table:add-separator table)
     (ascii-table:add-row table (list "TOTAL" (length pending)))
-    (ascii-table:display table)))
+    (when pending
+      (ascii-table:display table))))
 
 (defun display-applied (driver)
   "Displays the applied migrations in a table"
@@ -129,7 +130,8 @@
                                        (migration-applied migration))))
     (ascii-table:add-separator table)
     (ascii-table:add-row table (list "" "TOTAL" (length applied)))
-    (ascii-table:display table)))
+    (when applied
+      (ascii-table:display table))))
 
 (defun apply-pending (driver)
   "Applies the pending migrations"
