@@ -25,7 +25,8 @@
    :display-pending
    :display-applied
    :apply-pending
-   :contains-applied-migrations-p))
+   :contains-applied-migrations-p
+   :apply-and-register))
 (in-package :cl-migratum.core)
 
 (defclass migration ()
@@ -134,13 +135,17 @@
     (when applied
       (ascii-table:display table))))
 
+(defun apply-and-register (driver migration)
+  "Applies the migration and registers it"
+  (log:info "Applying migration ~a - ~a"
+            (migration-id migration)
+            (migration-description migration))
+      (apply-migration driver migration)
+      (register-migration driver migration))
+
 (defun apply-pending (driver)
   "Applies the pending migrations"
   (let ((pending (list-pending driver)))
     (log:info "Found ~a pending migration(s) to be applied" (length pending))
     (dolist (migration pending)
-      (log:info "Applying migration ~a - ~a"
-                (migration-id migration)
-                (migration-description migration))
-      (apply-migration driver migration)
-      (register-migration driver migration))))
+      (apply-and-register driver migration))))
