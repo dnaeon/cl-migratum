@@ -52,6 +52,11 @@
                  :name "local-path"
                  :path path))
 
+(defun migration-file-p (path scanner)
+  "Predicate used for testing whether a path matches a migration file pattern"
+  (when (cl-ppcre:scan scanner (namestring path))
+    t))
+
 (defmethod list-migrations ((provider local-path-provider) &key)
   (log:debug "Listing migrations from path ~a" (local-path-provider-path provider))
   (with-slots (path) provider
