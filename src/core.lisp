@@ -8,21 +8,21 @@
    :migration-id
    :migration-description
    :migration-applied
+   :migration-load-up-script
+   :migration-load-down-script
    :base-provider
    :provider-name
-   :list-migrations
-   :load-migration-up-script
-   :load-migration-down-script
-   :create-migration
+   :provider-list-migrations
+   :provider-create-migration
    :base-driver
    :driver-name
    :driver-provider
    :driver-init
-   :list-applied
-   :register-migration
-   :unregister-migration
-   :apply-up-migration
-   :apply-down-migration
+   :driver-list-applied
+   :driver-register-migration
+   :driver-unregister-migration
+   :driver-apply-up-migration
+   :driver-apply-down-migration
    :list-pending
    :latest-migration
    :display-pending
@@ -50,10 +50,10 @@
     :accessor migration-applied))
   (:documentation "Base class for migration resources"))
 
-(defgeneric load-migration-up-script (migration &key)
+(defgeneric migration-load-up-script (migration &key)
   (:documentation "Returns the contents of the upgrade migration script"))
 
-(defgeneric load-migration-down-script (migration &key)
+(defgeneric migration-load-down-script (migration &key)
   (:documentation "Returns the contents of the downgrade migration script"))
 
 (defclass base-provider ()
@@ -64,10 +64,10 @@
     :accessor provider-name))
   (:documentation "Base class for migration providers"))
 
-(defgeneric list-migrations (provider &key)
+(defgeneric provider-list-migrations (provider &key)
   (:documentation "Returns the list of migration resources discovered by the provider"))
 
-(defgeneric create-migration (provider &key id description up down)
+(defgeneric provider-create-migration (provider &key id description up down)
   (:documentation "Creates a new migration resource using the given provider"))
 
 (defclass base-driver ()
@@ -85,24 +85,24 @@
 (defgeneric driver-init (driver &key)
   (:documentation "Initializes the driver, e.g. creates required schema"))
 
-(defgeneric list-applied (driver &key)
+(defgeneric driver-list-applied (driver &key)
   (:documentation "Returns a list of the applied migrations in descending order"))
 
-(defgeneric register-migration (driver migration)
+(defgeneric driver-register-migration (driver migration &key)
   (:documentation "Registers a successfully applied migration"))
 
-(defgeneric apply-up-migration (driver migration)
+(defgeneric driver-apply-up-migration (driver migration &key)
   (:documentation "Applies the upgrade migration script using the given driver"))
 
-(defgeneric apply-down-migration (driver migration)
+(defgeneric driver-apply-down-migration (driver migration &key)
   (:documentation "Applies the downgrade migration script using the given driver"))
 
-(defgeneric unregister-migration (driver migration)
+(defgeneric driver-unregister-migration (driver migration &key)
   (:documentation "Unregisters a previously applied migration"))
 
 (defun latest-migration (driver)
   "Returns the latest applied migration"
-  (first (list-applied driver)))
+  (first (driver-list-applied driver)))
 
 (defun contains-applied-migrations-p (driver)
   "Predicate for testing whether we have any migrations applied"
@@ -116,7 +116,7 @@
                                        (migration-id latest-migration))
                                   -1))
          (provider (driver-provider driver))
-         (provided-migrations (list-migrations provider)))
+         (provided-migrations (provider-list-migrations provider)))
     (sort (remove-if-not (lambda (migration)
                            (> (migration-id migration) latest-migration-id))
                          provided-migrations)
@@ -137,7 +137,7 @@
 
 (defun display-applied (driver)
   "Displays the applied migrations in a table"
-  (let ((applied (list-applied driver))
+  (let ((applied (driver-list-applied driver))
         (table (ascii-table:make-table (list "ID" "DESCRIPTION" "APPLIED") :header "APPLIED MIGRATIONS")))
     (dolist (migration applied)
       (ascii-table:add-row table (list (migration-id migration)
@@ -153,8 +153,8 @@
   (log:info "Applying migration ~a - ~a"
             (migration-id migration)
             (migration-description migration))
-      (apply-migration driver migration)
-      (register-migration driver migration))
+      (driver-apply-up-migration driver migration)
+      (driver-register-migration driver migration))
 
 (defun apply-pending (driver)
   "Applies the pending migrations"

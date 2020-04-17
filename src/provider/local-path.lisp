@@ -11,14 +11,14 @@
    :base-provider
    :migration
    :migration-id
-   :list-migrations
-   :load-migration-up-script
-   :load-migration-down-script
-   :create-migration
+   :migration-load-up-script
+   :migration-load-down-script
+   :provider-list-migrations
+   :provider-create-migration
    :make-migration-id)
   (:export
    :migration-file-p
-   :find-migrationf-files
+   :find-migration-files
    :group-migration-files-by-id
    :find-migration-from-group
    :local-path-provider
@@ -44,13 +44,13 @@
     :accessor local-path-migration-down-script-path))
   (:documentation "Migration resource discovered from a local path"))
 
-(defmethod load-migration-up-script ((migration local-path-migration) &key)
+(defmethod migration-load-up-script ((migration local-path-migration) &key)
   (let ((id (migration-id migration))
         (path (local-path-migration-up-script-path migration)))
     (log:debug "Loading upgrade migration for id ~a from ~a" id path)
     (uiop:read-file-string path)))
 
-(defmethod load-migration-down-script ((migration local-path-migration) &key)
+(defmethod migration-load-down-script ((migration local-path-migration) &key)
   (let ((id (migration-id migration))
         (path (local-path-migration-down-script-path migration)))
     (log:debug "Loading downgrade migration for id ~a from ~a" id path)
@@ -106,7 +106,7 @@ GROUP-MIGRATION-FILES-BY id function."
                (getf x indicator))
         :test test))
 
-(defmethod list-migrations ((provider local-path-provider) &key)
+(defmethod provider-list-migrations ((provider local-path-provider) &key)
   (log:debug "Discovering migration files from path ~a" (local-path-provider-path provider))
   (let* ((path (local-path-provider-path provider))
          (scanner (cl-ppcre:create-scanner *migration-file-regex*))
@@ -127,7 +127,7 @@ GROUP-MIGRATION-FILES-BY id function."
              groups)
     result))
 
-(defmethod create-migration ((provider local-path-provider) &key id description up down)
+(defmethod provider-create-migration ((provider local-path-provider) &key id description up down)
   (log:debug "Creating new migration in path ~a" (local-path-provider-path provider))
   (let* ((provider-path (slot-value provider 'path))
          (id (or id (make-migration-id)))
@@ -135,7 +135,7 @@ GROUP-MIGRATION-FILES-BY id function."
          (up-content (or up ""))
          (down-content (or down ""))
          (up-file-name (format nil "~a-~a.up" id description))
-         (down-file-name (format nil "~a~a.down" id description))
+         (down-file-name (format nil "~a-~a.down" id description))
          (up-file-path (make-pathname :name up-file-name :type "sql" :directory (pathname-directory (truename provider-path))))
          (down-file-path (make-pathname :name down-file-name :type "sql" :directory (pathname-directory (truename provider-path)))))
     (log:debug "Creating UP migration file ~a" up-file-path)
