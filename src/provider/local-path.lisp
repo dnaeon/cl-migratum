@@ -119,19 +119,26 @@ GROUP-MIGRATION-FILES-BY id function."
              groups)
     result))
 
-(defmethod create-migration ((provider local-path-provider) &key id description content)
+(defmethod create-migration ((provider local-path-provider) &key id description up down)
   (log:debug "Creating new migration in path ~a" (local-path-provider-path provider))
   (let* ((provider-path (slot-value provider 'path))
          (id (or id (make-migration-id)))
          (description (or description "new-migration"))
-         (content (or content ""))
-         (file-name (format nil "~a-~a" id description))
-         (file-path (make-pathname :name file-name :type "sql" :directory (pathname-directory (truename provider-path)))))
-    (log:debug "Creating migration file ~a" file-path)
-    (with-open-file (out file-path :direction :output :if-does-not-exist :create)
-      (write-string content out))
+         (up-content (or up ""))
+         (down-content (or down ""))
+         (up-file-name (format nil "~a-~a.up" id description))
+         (down-file-name (format nil "~a~a.down" id description))
+         (up-file-path (make-pathname :name up-file-name :type "sql" :directory (pathname-directory (truename provider-path))))
+         (down-file-path (make-pathname :name down-file-name :type "sql" :directory (pathname-directory (truename provider-path)))))
+    (log:debug "Creating UP migration file ~a" up-file-path)
+    (with-open-file (out up-file-path :direction :output :if-does-not-exist :create)
+      (write-string up-content out))
+    (log:debug "Creating DOWN migration file ~a" down-file-path)
+    (with-open-file (out down-file-path :direction :output :if-does-not-exist :create)
+      (write-string down-content out))
     (make-instance 'local-path-migration
                    :id id
                    :description description
-                   :path file-path
-                   :applied nil)))
+                   :applied nil
+                   :up-script-path up-file-path
+                   :down-script-path down-file-path)))

@@ -61,7 +61,7 @@
 (defgeneric list-migrations (provider &key)
   (:documentation "Returns the list of migration resources discovered by the provider"))
 
-(defgeneric create-migration (provider &key id description content)
+(defgeneric create-migration (provider &key id description up down)
   (:documentation "Creates a new migration resource using the given provider"))
 
 (defclass base-driver ()
