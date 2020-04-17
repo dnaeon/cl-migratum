@@ -20,7 +20,9 @@
    :driver-init
    :list-applied
    :register-migration
-   :apply-migration
+   :unregister-migration
+   :apply-up-migration
+   :apply-down-migration
    :list-pending
    :latest-migration
    :display-pending
@@ -86,11 +88,17 @@
 (defgeneric list-applied (driver &key)
   (:documentation "Returns a list of the applied migrations in descending order"))
 
-(defgeneric register-migration (driver migration &key)
+(defgeneric register-migration (driver migration)
   (:documentation "Registers a successfully applied migration"))
 
-(defgeneric apply-migration (driver migration &key)
-  (:documentation "Applies a single migration using the given driver"))
+(defgeneric apply-up-migration (driver migration)
+  (:documentation "Applies the upgrade migration script using the given driver"))
+
+(defgeneric apply-down-migration (driver migration)
+  (:documentation "Applies the downgrade migration script using the given driver"))
+
+(defgeneric unregister-migration (driver migration)
+  (:documentation "Unregisters a previously applied migration"))
 
 (defun latest-migration (driver)
   "Returns the latest applied migration"
