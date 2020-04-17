@@ -11,7 +11,8 @@
    :base-provider
    :provider-name
    :list-migrations
-   :load-migration
+   :load-migration-up-script
+   :load-migration-down-script
    :create-migration
    :base-driver
    :driver-name
@@ -47,8 +48,11 @@
     :accessor migration-applied))
   (:documentation "Base class for migration resources"))
 
-(defgeneric load-migration (migration &key)
-  (:documentation "Returns the contents of the migration resource"))
+(defgeneric load-migration-up-script (migration &key)
+  (:documentation "Returns the contents of the upgrade migration script"))
+
+(defgeneric load-migration-down-script (migration &key)
+  (:documentation "Returns the contents of the downgrade migration script"))
 
 (defclass base-provider ()
   ((name
