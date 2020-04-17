@@ -12,7 +12,8 @@
    :migration
    :migration-id
    :list-migrations
-   :load-migration
+   :load-migration-up-script
+   :load-migration-down-script
    :create-migration
    :make-migration-id)
   (:export
@@ -43,9 +44,16 @@
     :accessor local-path-migration-down-script-path))
   (:documentation "Migration resource discovered from a local path"))
 
-(defmethod load-migration ((migration local-path-migration) &key)
-  (log:debug "Loading migration ~a" (migration-id migration))
-  (with-slots (path) migration
+(defmethod load-migration-up-script ((migration local-path-migration) &key)
+  (let ((id (migration-id migration))
+        (path (local-path-migration-up-script-path migration)))
+    (log:debug "Loading upgrade migration for id ~a from ~a" id path)
+    (uiop:read-file-string path)))
+
+(defmethod load-migration-down-script ((migration local-path-migration) &key)
+  (let ((id (migration-id migration))
+        (path (local-path-migration-down-script-path migration)))
+    (log:debug "Loading downgrade migration for id ~a from ~a" id path)
     (uiop:read-file-string path)))
 
 (defclass local-path-provider (base-provider)
