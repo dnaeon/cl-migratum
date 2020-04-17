@@ -64,6 +64,20 @@
                      (migration-file-p file scanner))
                    files)))
 
+(defun group-migration-files-by-id (files scanner)
+  "Groups migration files by id. Each group consists of the upgrade and downgrade scripts."
+  (reduce (lambda (acc file)
+            (cl-ppcre:register-groups-bind (id description operation)
+                (scanner (namestring file))
+              (let* ((id (parse-integer id))
+                    (group (gethash id acc nil)))
+                (setf (gethash id acc)
+                      (push (list :id id :operation operation :description description :path file)
+                            group))))
+            acc)
+          files
+          :initial-value (make-hash-table)))
+
 (defmethod list-migrations ((provider local-path-provider) &key)
   (log:debug "Listing migrations from path ~a" (local-path-provider-path provider))
   (with-slots (path) provider
