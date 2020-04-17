@@ -78,6 +78,17 @@
           files
           :initial-value (make-hash-table)))
 
+(defun find-migration-from-group (item sequence &key (indicator :operation) (test #'equal))
+  "Returns the migration spec from a group of migrations by searching for the item and indicator.
+One example usage of this function is to find a migration by operation (e.g. `up` or `down`)
+You can use this helper function to find migrations in the groups returned by the
+GROUP-MIGRATION-FILES-BY id function."
+  (find item
+        sequence
+        :key (lambda (x)
+               (getf x indicator))
+        :test test))
+
 (defmethod list-migrations ((provider local-path-provider) &key)
   (log:debug "Listing migrations from path ~a" (local-path-provider-path provider))
   (with-slots (path) provider
