@@ -14,6 +14,7 @@
    :provider-name
    :provider-list-migrations
    :provider-create-migration
+   :provider-find-migration-by-id
    :base-driver
    :driver-name
    :driver-provider
@@ -162,6 +163,11 @@
     (log:info "Found ~a pending migration(s) to be applied" (length pending))
     (dolist (migration pending)
       (apply-and-register driver migration))))
+
+(defun provider-find-migration-by-id (provider id)
+  "Returns the migration with the given id from the provider"
+  (let ((migrations (provider-list-migrations provider)))
+    (find id migrations :key #'migration-id)))
 
 (defun make-migration-id ()
   "Creates a new migration id"
