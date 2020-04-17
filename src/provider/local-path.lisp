@@ -57,6 +57,13 @@
   (when (cl-ppcre:scan scanner (namestring path))
     t))
 
+(defun find-migration-files (path scanner)
+  "Filters all files that match the given pattern scanner"
+  (let ((files (uiop:directory-files path)))
+    (remove-if-not (lambda (file)
+                     (migration-file-p file scanner))
+                   files)))
+
 (defmethod list-migrations ((provider local-path-provider) &key)
   (log:debug "Listing migrations from path ~a" (local-path-provider-path provider))
   (with-slots (path) provider
