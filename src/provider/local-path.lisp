@@ -16,22 +16,31 @@
    :create-migration
    :make-migration-id)
   (:export
+   :migration-file-p
+   :find-migrationf-files
+   :group-migration-files-by-id
+   :find-migration-from-group
    :local-path-provider
    :local-path-migration
-   :local-path-migration-path
+   :local-path-migration-up-script-path
+   :local-path-migration-down-script-path
    :local-path-provider-path
    :make-local-path-provider))
 (in-package :cl-migratum.provider.local-path)
 
 (defparameter *migration-file-regex*
-  "(\\d{14})-(.*)\.sql$"
+  "(\\d{14})-(.*)\.(up|down)\.sql$"
   "Regex used to match migration files")
 
 (defclass local-path-migration (migration)
-  ((path
-    :initarg :path
-    :initform (error "Must specify path")
-    :accessor local-path-migration-path))
+  ((up-script-path
+    :initarg :up-script-path
+    :initform (error "Must specify up script path")
+    :accessor local-path-migration-up-script-path)
+   (down-script-path
+    :initarg :down-script-path
+    :initform (error "Must specify down script path")
+    :accessor local-path-migration-down-script-path))
   (:documentation "Migration resource discovered from a local path"))
 
 (defmethod load-migration ((migration local-path-migration) &key)
@@ -90,21 +99,25 @@ GROUP-MIGRATION-FILES-BY id function."
         :test test))
 
 (defmethod list-migrations ((provider local-path-provider) &key)
-  (log:debug "Listing migrations from path ~a" (local-path-provider-path provider))
-  (with-slots (path) provider
-    (let* ((files (uiop:directory-files path))
-           (scanner (cl-ppcre:create-scanner *migration-file-regex*))
-           (result nil))
-      (dolist (file files)
-        (cl-ppcre:register-groups-bind (id description)
-            (scanner (namestring file))
-          (push (make-instance 'local-path-migration
-                               :id (parse-integer id)
-                               :description description
-                               :applied nil
-                               :path file)
-                result)))
-      result)))
+  (log:debug "Discovering migration files from path ~a" (local-path-provider-path provider))
+  (let* ((path (local-path-provider-path provider))
+         (scanner (cl-ppcre:create-scanner *migration-file-regex*))
+         (files (find-migration-files path scanner))
+         (groups (group-migration-files-by-id files scanner))
+         (result nil))
+    (maphash (lambda (k v)
+               (let ((id k)
+                     (up-migration (find-migration-from-group "up" v :indicator :operation))
+                     (down-migration (find-migration-from-group "down" v :indicator :operation)))
+                 (push (make-instance 'local-path-migration
+                                      :id id
+                                      :description (getf up-migration :description)
+                                      :applied nil
+                                      :up-script-path (getf up-migration :path)
+                                      :down-script-path (getf down-migration :path))
+                       result)))
+             groups)
+    result))
 
 (defmethod create-migration ((provider local-path-provider) &key id description content)
   (log:debug "Creating new migration in path ~a" (local-path-provider-path provider))
