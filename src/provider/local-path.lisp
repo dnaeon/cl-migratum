@@ -7,6 +7,9 @@
   (:import-from :cl-ppcre)
   (:import-from :uiop)
   (:import-from
+   :cl-migratum.util
+   :make-migration-id)
+  (:import-from
    :cl-migratum.core
    :base-provider
    :migration
@@ -14,8 +17,7 @@
    :migration-load-up-script
    :migration-load-down-script
    :provider-list-migrations
-   :provider-create-migration
-   :make-migration-id)
+   :provider-create-migration)
   (:export
    :migration-file-p
    :find-migration-files
