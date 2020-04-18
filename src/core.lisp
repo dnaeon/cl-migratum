@@ -3,6 +3,8 @@
   (:use :cl)
   (:nicknames :migratum.core)
   (:import-from :ascii-table)
+  (:import-from :cl-migratum.util
+		:take)
   (:export
    :migration
    :migration-id
@@ -31,7 +33,8 @@
    :apply-pending
    :contains-applied-migrations-p
    :apply-and-register
-   :revert-and-unregister))
+   :revert-and-unregister
+   :revert-last))
 (in-package :cl-migratum.core)
 
 (defclass migration ()
@@ -170,10 +173,10 @@
     (find id migrations :key #'migration-id)))
 
 (defun revert-and-unregister (driver migration)
-  "Reverts and unregisters a given migration"
-  ;; In order to revert the migration we need to first
-  ;; find it using the provider, so that we can
-  ;; load the downgrade script.
+  "Reverts and unregisters a given migration.
+The migration to be reverted is first loaded via the
+driver provider, in order to ensure we can load the
+downgrade script."
   (let* ((id (migration-id migration))
 	 (description (migration-description migration))
 	 (provider (driver-provider driver))
@@ -181,3 +184,14 @@
     (log:info "Reverting migration ~a - ~a" id description)
     (driver-apply-down-migration driver to-revert)
     (driver-unregister-migration driver to-revert)))
+
+(defun revert-last (driver &key (count 1))
+  "Reverts the last COUNT applied migrations"
+  (let* ((provider (driver-provider driver))
+	 (applied (driver-list-applied driver))
+	 (to-revert (take count applied)))
+    (map nil (lambda (item)
+	       (let* ((id (migration-id item))
+		      (migration (provider-find-migration-by-id provider id)))
+		 (revert-and-unregister driver migration)))
+	 to-revert)))
