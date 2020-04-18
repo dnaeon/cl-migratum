@@ -3,8 +3,9 @@
   (:use :cl)
   (:nicknames :migratum.core)
   (:import-from :ascii-table)
-  (:import-from :cl-migratum.util
-		:take)
+  (:import-from
+   :cl-migratum.util
+   :take)
   (:export
    :migration
    :migration-id
@@ -33,6 +34,7 @@
    :apply-pending
    :contains-applied-migrations-p
    :apply-and-register
+   :apply-next
    :revert-and-unregister
    :revert-last))
 (in-package :cl-migratum.core)
@@ -178,20 +180,26 @@ The migration to be reverted is first loaded via the
 driver provider, in order to ensure we can load the
 downgrade script."
   (let* ((id (migration-id migration))
-	 (description (migration-description migration))
-	 (provider (driver-provider driver))
-	 (to-revert (provider-find-migration-by-id provider id)))
+         (description (migration-description migration))
+         (provider (driver-provider driver))
+         (to-revert (provider-find-migration-by-id provider id)))
     (log:info "Reverting migration ~a - ~a" id description)
     (driver-apply-down-migration driver to-revert)
     (driver-unregister-migration driver to-revert)))
 
+(defun apply-next (driver &key (count 1))
+  "Apply the next COUNT of pending migrations"
+  (let* ((pending (list-pending driver))
+         (to-apply (take count pending)))
+    (dolist (migration to-apply)
+      (apply-and-register driver migration))))
+
 (defun revert-last (driver &key (count 1))
   "Reverts the last COUNT applied migrations"
   (let* ((provider (driver-provider driver))
-	 (applied (driver-list-applied driver))
-	 (to-revert (take count applied)))
-    (map nil (lambda (item)
-	       (let* ((id (migration-id item))
-		      (migration (provider-find-migration-by-id provider id)))
-		 (revert-and-unregister driver migration)))
-	 to-revert)))
+         (applied (driver-list-applied driver))
+         (to-revert (take count applied)))
+    (dolist (item to-revert)
+      (let* ((id (migration-id item))
+             (migration (provider-find-migration-by-id provider id)))
+        (revert-and-unregister driver migration)))))
