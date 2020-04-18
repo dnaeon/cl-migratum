@@ -19,8 +19,12 @@
                :cl-ppcre
                :cl-ascii-table
                :log4cl)
-  :components ((:module "core"
+  :components ((:module "util"
                 :pathname #P"src/"
+                :components ((:file "util")))
+               (:module "core"
+                :pathname #P"src/"
+                :depends-on ("util")
                 :components ((:file "core")))
                (:module "provider"
                 :pathname #P"src/provider/"
