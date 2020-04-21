@@ -169,7 +169,7 @@ already, so lets initialize our driver first.
 CL-USER> (migratum:driver-init *driver*)
 ```
 
-## Displaying Pending Migrations
+### Pending Migrations
 
 In order to get the list of pending (not applied yet) migrations we can
 use the `MIGRATUM:LIST-PENDING` function, e.g.
@@ -202,7 +202,7 @@ NIL
 
 The migrations will be sorted in the order they need to be applied.
 
-## Applying Pending Migrations
+### Applying Migrations
 
 The following functions are used for applying pending migrations.
 
@@ -224,7 +224,7 @@ CL-USER> (migratum:apply-pending *driver*)
 NIL
 ```
 
-## Displaying Applied Migrations
+### Displaying Applied Migrations
 
 The following functions can be used to get and display the
 list of applied database migrations.
@@ -262,16 +262,99 @@ NIL
 The output of these functions will be the applied migrations in
 descending order by their id, first one being the most recent one.
 
-## Finding Migration by ID
+### Stepping through migrations
 
-TODO: Document me
+Using the following functions you can step through migrations.
 
-## Stepping through migrations
+* `MIGRATUM:APPLY-NEXT`
+* `MIGRATUM:REVERT-LAST`
 
-TODO: Document me
+This is useful in situations when you don't want to apply
+all migrations at once, but rather do it one at a time. Both of these
+functions accept a keyword parameter `:count` which specifies the
+number of migrations to apply or revert.
 
- - apply-next
- - revert-last
+Consider the following pending migrations.
+
+``` common-lisp
+CL-USER> (migratum:display-pending *driver*)
+.-----------------------------------.
+|        PENDING MIGRATIONS         |
++----------------+------------------+
+| ID             | DESCRIPTION      |
++----------------+------------------+
+| 20200421173657 | create-table-foo |
+| 20200421173908 | create-table-bar |
+| 20200421180337 | create-table-qux |
++----------------+------------------+
+| TOTAL          |                3 |
++----------------+------------------+
+NIL
+```
+
+We can apply them one by one and verify them as we go.
+
+``` common-lisp
+CL-USER> (migratum:apply-next *driver*)
+ <INFO> [20:04:25] cl-migratum.core core.lisp (apply-and-register) -
+  Applying migration 20200421173657 - create-table-foo
+NIL
+CL-USER> (migratum:apply-next *driver*)
+ <INFO> [20:04:28] cl-migratum.core core.lisp (apply-and-register) -
+  Applying migration 20200421173908 - create-table-bar
+NIL
+CL-USER> (migratum:apply-next *driver*)
+ <INFO> [20:04:29] cl-migratum.core core.lisp (apply-and-register) -
+  Applying migration 20200421180337 - create-table-qux
+NIL
+```
+
+If we want to revert the last three migrations we can use the
+`MIGRATUM:REVERT-LAST` function, e.g.
+
+``` common-lisp
+CL-USER> (migratum:revert-last *driver* :count 3)
+ <INFO> [20:06:00] cl-migratum.core core.lisp (revert-and-unregister) -
+  Reverting migration 20200421180337 - create-table-qux
+ <INFO> [20:06:00] cl-migratum.core core.lisp (revert-and-unregister) -
+  Reverting migration 20200421173908 - create-table-bar
+ <INFO> [20:06:00] cl-migratum.core core.lisp (revert-and-unregister) -
+  Reverting migration 20200421173657 - create-table-foo
+NIL
+```
+
+### Creating New Migrations
+
+The following generic function creates a new migration
+sequence, when supported by the provider that you are using.
+
+* `MIGRATUM:PROVIDER-CREATE-MIGRATION`
+
+Here's one example of creating a new migration, which also specifies
+the upgrade and downgrade scripts as part of the keyword parameters.
+
+``` common-lisp
+*MIGRATION*
+CL-USER> (defparameter *migration*
+           (migratum:provider-create-migration *provider*
+                                               :description "create-table-fubar"
+                                               :up "CREATE TABLE fubar (id INTEGER PRIMARY KEY);"
+                                               :down "DROP TABLE fubar;"))
+*MIGRATION*
+```
+
+We can also inspect the newly created migration, e.g.
+
+``` common-lisp
+CL-USER> (migratum:migration-id *migration*)
+20200421201406
+CL-USER> (migratum:migration-description *migration*)
+"create-table-fubar"
+CL-USER> (migratum:migration-load-up-script *migration*)
+"CREATE TABLE fubar (id INTEGER PRIMARY KEY);"
+CL-USER> (migratum:migration-load-down-script *migration*)
+"DROP TABLE fubar;"
+```
 
 ## Implemeting MIGRATION resources
 
