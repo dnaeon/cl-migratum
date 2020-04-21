@@ -44,16 +44,19 @@
     :type integer
     :initarg :id
     :initform (error "Must specify migration id")
-    :accessor migration-id)
+    :accessor migration-id
+    :documentation "Unique migration id")
    (description
     :type string
     :initarg :description
     :initform (error "Must specify migration description")
-    :accessor migration-description)
+    :accessor migration-description
+    :documentation "Description of the migration")
    (applied
     :initarg :applied
     :initform nil
-    :accessor migration-applied))
+    :accessor migration-applied
+    :documentation "Timestamp when the migration was applied"))
   (:documentation "Base class for migration resources"))
 
 (defgeneric migration-load-up-script (migration &key)
@@ -67,7 +70,8 @@
     :type string
     :initarg :name
     :initform (error "Must specify provider name")
-    :accessor provider-name))
+    :accessor provider-name
+    :documentation "Name of the provider"))
   (:documentation "Base class for migration providers"))
 
 (defgeneric provider-list-migrations (provider &key)
@@ -81,11 +85,13 @@
     :type string
     :initarg :name
     :initform (error "Must specify driver name")
-    :accessor driver-name)
+    :accessor driver-name
+    :documentation "Name of the driver")
    (provider
     :initarg :provider
     :initform (error "Must specify migrations provider")
-    :accessor driver-provider))
+    :accessor driver-provider
+    :documentation "Provider used by the driver"))
   (:documentation "Base class for migration drivers"))
 
 (defgeneric driver-init (driver &key)

@@ -40,7 +40,8 @@ CREATE TABLE IF NOT EXISTS migration (
   ((connection
     :initarg :connection
     :accessor sql-driver-connection
-    :initform (error "Must specify database connection")))
+    :initform (error "Must specify database connection")
+    :documentation "CL-DBI connection to use"))
   (:documentation "Driver for performing SQL migrations"))
 
 (defmethod driver-init ((driver sql-driver) &key)

@@ -39,11 +39,13 @@
   ((up-script-path
     :initarg :up-script-path
     :initform (error "Must specify up script path")
-    :accessor local-path-migration-up-script-path)
+    :accessor local-path-migration-up-script-path
+    :documentation "Path to the upgrade SQL script")
    (down-script-path
     :initarg :down-script-path
     :initform (error "Must specify down script path")
-    :accessor local-path-migration-down-script-path))
+    :accessor local-path-migration-down-script-path
+    :documentation "Path to the downgrade SQL script"))
   (:documentation "Migration resource discovered from a local path"))
 
 (defmethod migration-load-up-script ((migration local-path-migration) &key)
@@ -62,7 +64,8 @@
   ((path
     :initarg :path
     :initform (error "Must specify path")
-    :accessor local-path-provider-path))
+    :accessor local-path-provider-path
+    :documentation "Local path from which to discover migrations"))
   (:documentation "Provider for discovering migrations from a local path"))
 
 (defun make-local-path-provider (path)
