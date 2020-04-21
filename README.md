@@ -142,7 +142,7 @@ database connection.
 
 ``` common-lisp
 CL-USER> (defparameter *conn*
-           (dbi:connect :sqlite3 :database-name "/Users/mnikolov/cl-migratum.db"))
+           (dbi:connect :sqlite3 :database-name "/Users/dnaeon/cl-migratum.db"))
 *CONN*
 ```
 
@@ -222,6 +222,32 @@ CL-USER> (migratum:apply-pending *driver*)
  <INFO> [18:10:14] cl-migratum.core core.lisp (apply-and-register) -
   Applying migration 20200421180337 - create-table-qux
 NIL
+```
+
+### Get Latest Migration
+
+You can use the following function to get the latest applied
+migration.
+
+* `MIGRATUM:LATEST-MIGRATION`
+
+The following expression will return the latest migration id.
+
+``` common-lisp
+CL-USER> (migratum:migration-id (migratum:latest-migration *driver*))
+20200421180337
+```
+
+The following predicate can be used to query whether there are any
+migrations applied.
+
+* `MIGRATUM:CONTAINS-APPLIED-MIGRATIONS-P`
+
+For example:
+
+``` common-lisp
+CL-USER> (migratum:contains-applied-migrations-p *driver*)
+T
 ```
 
 ### Displaying Applied Migrations
@@ -334,7 +360,6 @@ Here's one example of creating a new migration, which also specifies
 the upgrade and downgrade scripts as part of the keyword parameters.
 
 ``` common-lisp
-*MIGRATION*
 CL-USER> (defparameter *migration*
            (migratum:provider-create-migration *provider*
                                                :description "create-table-fubar"
@@ -412,6 +437,10 @@ TODO: Document me
 
 TODO: Document me
 
+## Tests
+
+TODO: Document me
+
 ## Contributing
 
 `cl-migratum` is hosted on
@@ -421,7 +450,7 @@ requests.
 
 ## Authors
 
-* Marin Atanasov Nikolov <dnaeon@gmail.com>
+* Marin Atanasov Nikolov (dnaeon@gmail.com)
 
 ## License
 
