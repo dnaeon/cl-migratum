@@ -21,8 +21,6 @@
   (:export
    :migration-file-p
    :find-migration-files
-   :group-migration-files-by-id
-   :find-migration-from-group
    :local-path-provider
    :local-path-migration
    :local-path-migration-up-script-path
