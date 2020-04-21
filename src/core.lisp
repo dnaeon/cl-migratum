@@ -33,9 +33,7 @@
    :display-applied
    :apply-pending
    :contains-applied-migrations-p
-   :apply-and-register
    :apply-next
-   :revert-and-unregister
    :revert-last))
 (in-package :cl-migratum.core)
 
