@@ -23,8 +23,7 @@
   (:export
    :sql-driver
    :sql-driver-connection
-   :make-sql-driver
-   :sql-driver-apply-migration))
+   :make-sql-driver))
 (in-package :cl-migratum.driver.sql)
 
 (defparameter *sql-init-schema*
