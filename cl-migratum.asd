@@ -33,4 +33,8 @@
                (:module "driver"
                 :pathname #P"src/driver/"
                 :depends-on ("core")
-                :components ((:file "sql")))))
+                :components ((:file "sql")))
+               (:module "client-package"
+                :pathname #P"src/"
+                :depends-on ("core" "provider" "driver")
+                :components ((:file "package")))))
