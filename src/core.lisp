@@ -200,10 +200,7 @@ downgrade script."
 
 (defun revert-last (driver &key (count 1))
   "Reverts the last COUNT applied migrations"
-  (let* ((provider (driver-provider driver))
-         (applied (driver-list-applied driver))
+  (let* ((applied (driver-list-applied driver))
          (to-revert (take count applied)))
     (dolist (item to-revert)
-      (let* ((id (migration-id item))
-             (migration (provider-find-migration-by-id provider id)))
-        (revert-and-unregister driver migration)))))
+      (revert-and-unregister driver item))))
