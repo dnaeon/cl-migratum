@@ -381,19 +381,62 @@ CL-USER> (migratum:migration-load-down-script *migration*)
 "DROP TABLE fubar;"
 ```
 
-## Implemeting MIGRATION resources
+## Implemeting new migration resources
 
-TODO: Document me
+Generally new migration resources will be implemented along with a
+`provider`, which discovers them.
 
-### MIGRATION-LOAD-UP-SCRIPT
+You can implement a new migration resource by subclassing the
+`MIGRATUM:BASE-MIGRATION` class.
 
-TODO: Document me
+The following generic functions should be implemented on the newly
+defined class, which need to return the upgrade and downgrade
+scripts respectively for executing a migration.
 
-### MIGRATION-LOAD-DOWN-SCRIPT
+* `MIGRATUM:MIGRATION-LOAD-UP-SCRIPT`
+* `MIGRATUM:MIGRATION-LOAD-DOWN-SCRIPT`
 
-TODO: Document me
+The following generic functions can be overriden, if needed.
 
-## Implementing PROVIDERs
+* `MIGRATUM:MIGRATION-ID`
+* `MIGRATUM:MIGRATION-DESCRIPTION`
+* `MIGRATUM:MIGRATION-APPLIED`
+
+Example implementation that loads migration resources from a remote
+HTTP server might look like this. The following code uses
+[Dexador](https://github.com/fukamachi/dexador) as the HTTP client.
+
+``` common-lisp
+(defun http-get (url)
+  "HTTP GETs the given URL"
+  (let ((contents (dex:get url :force-string t)))
+    contents))
+
+(defclass http-migration (base-migration)
+  ((up-script-url
+    :initarg :up-script-url
+    :initform (error "Must specify URL to upgrade script")
+    :accessor http-migration-up-script-url
+    :documentation "URL to the upgrade script")
+   (down-script-url
+    :initarg :down-script-url
+    :initform (error "Must specify URL to downgrade script")
+    :accessor http-migration-down-script-url
+    :documentation "URL to the downgrade script"))
+  (:documentation "HTTP migration resource"))
+
+(defmethod migration-load-up-script ((migration http-migration) &key)
+  (http-get (http-migration-up-script-url migration)))
+
+(defmethod migration-load-down-script ((migration http-migration) &key)
+  (http-get (http-migration-down-script-url migration)))
+```
+
+A provider should simply `MAKE-INSTANCE` of the `HTTP-MIGRATION` class by
+providing values for the required slots while discovering migrations via
+the `PROVIDER-LIST-MIGRATIONS` function.
+
+## Implementing new providers
 
 TODO: Document me
 
@@ -454,4 +497,5 @@ requests.
 
 ## License
 
-[BSD License](http://opensource.org/licenses/BSD-2-Clause).
+This project is Open Source and licensed under the [BSD
+License](http://opensource.org/licenses/BSD-2-Clause).
