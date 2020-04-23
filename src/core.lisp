@@ -72,6 +72,9 @@
     :documentation "Name of the provider"))
   (:documentation "Base class for migration providers"))
 
+(defgeneric provider-init (provider &key)
+  (:documentation "Initializes the driver, if needed"))
+
 (defgeneric provider-list-migrations (provider &key)
   (:documentation "Returns the list of migration resources discovered by the provider"))
 
