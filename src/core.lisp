@@ -88,7 +88,7 @@
 
 (defmethod provider-init ((provider base-provider) &key)
   (log:debug "Initializing provider ~a" (provider-name provider))
-  (setf (provider-initialized provider t)))
+  (setf (provider-initialized provider) t))
 
 (defclass base-driver ()
   ((name
