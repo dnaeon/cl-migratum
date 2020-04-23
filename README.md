@@ -93,8 +93,10 @@ CL-USER> (defparameter *provider*
 
 The `LOCAL-PATH-PROVIDER` discovers migration files which match the following pattern.
 
-* `<id>-<description>.up.sql` - upgrade script
-* `<id>-<description>.down.sql` - downgrade script
+| Pattern                       | Description      |
+|-------------------------------|------------------|
+| `<id>-<description>.up.sql`   | Upgrade script   |
+| `<id>-<description>.down.sql` | Downgrade script |
 
 A provider can optionally be initialized, which can be done using the
 `MIGRATUM:PROVIDER-INIT` generic function. Not all providers would
@@ -114,11 +116,13 @@ CL-USER> (migratum:provider-list-migrations *provider*)
 The following generic functions can be used to interact with
 discovered migrations.
 
-* `MIGRATUM:MIGRATION-ID`
-* `MIGRATUM:MIGRATION-DESCRIPTION`
-* `MIGRATUM:MIGRATION-APPLIED`
-* `MIGRATUM:MIGRATION-LOAD-UP-SCRIPT`
-* `MIGRATUM:MIGRATION-LOAD-DOWN-SCRIPT`
+| Method                                | Description                                             |
+|---------------------------------------|---------------------------------------------------------|
+| `MIGRATUM:MIGRATION-ID`               | Returns the unique migration id                         |
+| `MIGRATUM:MIGRATION-DESCRIPTION`      | Returns the description of the migration                |
+| `MIGRATUM:MIGRATION-APPLIED`          | Returns the timestamp of when the migration was applied |
+| `MIGRATUM:MIGRATION-LOAD-UP-SCRIPT`   | Returns the upgrade script of the migration             |
+| `MIGRATUM:MIGRATION-LOAD-DOWN-SCRIPT` | Returns the downgrade script of the migration           |
 
 For example in order to collect the unique IDs of migration resources you can
 evaluate the following expression.
@@ -226,24 +230,16 @@ NIL
 
 ### Get Latest Migration
 
-You can use the following function to get the latest applied
-migration.
-
-* `MIGRATUM:LATEST-MIGRATION`
-
-The following expression will return the latest migration id.
+You can use the `MIGRATUM:LATEST-MIGRATION` function to get the latest
+applied migration, e.g.
 
 ``` common-lisp
 CL-USER> (migratum:migration-id (migratum:latest-migration *driver*))
 20200421180337
 ```
 
-The following predicate can be used to query whether there are any
-migrations applied.
-
-* `MIGRATUM:CONTAINS-APPLIED-MIGRATIONS-P`
-
-For example:
+The `MIGRATUM:CONTAINS-APPLIED-MIGRATIONS-P` predicate can be used to
+query whether there are any migrations applied, e.g.
 
 ``` common-lisp
 CL-USER> (migratum:contains-applied-migrations-p *driver*)
@@ -255,8 +251,10 @@ T
 The following functions can be used to get and display the
 list of applied database migrations.
 
-* `MIGRATUM:DRIVER-LIST-APPLIED`
-* `MIGRATUM:DISPLAY-APPLIED`
+| Function                       | Description                            |
+|--------------------------------|----------------------------------------|
+| `MIGRATUM:DRIVER-LIST-APPLIED` | Returns the list of applied migrations |
+| `MIGRATUM:DISPLAY-APPLIED`     | Display a table of applied migrations  |
 
 This is how we can get the list of applied migrations.
 
@@ -292,8 +290,10 @@ descending order by their id, first one being the most recent one.
 
 Using the following functions you can step through migrations.
 
-* `MIGRATUM:APPLY-NEXT`
-* `MIGRATUM:REVERT-LAST`
+| Function               | Description                          |
+|------------------------|--------------------------------------|
+| `MIGRATUM:APPLY-NEXT`  | Apply the next pending migration(s)  |
+| `MIGRATUM:REVERT-LAST` | Revert the last applied migration(s) |
 
 This is useful in situations when you don't want to apply
 all migrations at once, but rather do it one at a time. Both of these
@@ -351,10 +351,9 @@ NIL
 
 ### Creating New Migrations
 
-The following generic function creates a new migration
-sequence, when supported by the provider that you are using.
-
-* `MIGRATUM:PROVIDER-CREATE-MIGRATION`
+The `MIGRATUM:PROVIDER-CREATE-MIGRATION` generic function creates a
+new migration sequence, when supported by the provider that you are
+using.
 
 Here's one example of creating a new migration, which also specifies
 the upgrade and downgrade scripts as part of the keyword parameters.
@@ -390,17 +389,20 @@ You can implement a new migration resource by subclassing the
 `MIGRATUM:BASE-MIGRATION` class.
 
 The following generic functions should be implemented on the newly
-defined class, which need to return the upgrade and downgrade
-scripts respectively for executing a migration.
+defined class.
 
-* `MIGRATUM:MIGRATION-LOAD-UP-SCRIPT`
-* `MIGRATUM:MIGRATION-LOAD-DOWN-SCRIPT`
+| Method                                | Description                  |
+|---------------------------------------|------------------------------|
+| `MIGRATUM:MIGRATION-LOAD-UP-SCRIPT`   | Returns the upgrade script   |
+| `MIGRATUM:MIGRATION-LOAD-DOWN-SCRIPT` | Returns the downgrade script |
 
 The following generic functions can be overriden, if needed.
 
-* `MIGRATUM:MIGRATION-ID`
-* `MIGRATUM:MIGRATION-DESCRIPTION`
-* `MIGRATUM:MIGRATION-APPLIED`
+| Method                           | Description                                         |
+|----------------------------------|-----------------------------------------------------|
+| `MIGRATUM:MIGRATION-ID`          | Returns the unique migration id                     |
+| `MIGRATUM:MIGRATION-DESCRIPTION` | Returns description of the migration                |
+| `MIGRATUM:MIGRATION-APPLIED`     | Returns timestamp of when the migration was applied |
 
 Example implementation that loads migration resources from a remote
 HTTP server might look like this. The following code uses
