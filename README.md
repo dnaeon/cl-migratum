@@ -380,6 +380,15 @@ CL-USER> (migratum:migration-load-down-script *migration*)
 "DROP TABLE fubar;"
 ```
 
+## Debug logging
+
+`cl-migratum` uses [log4cl](https://github.com/sharplispers/log4cl),
+so you can enable debug logging, if needed.
+
+``` common-lisp
+CL-USER> (log:config :debug)
+```
+
 ## Implemeting new migration resources
 
 Generally new migration resources will be implemented along with a
