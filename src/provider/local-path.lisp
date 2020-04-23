@@ -12,7 +12,7 @@
   (:import-from
    :cl-migratum.core
    :base-provider
-   :migration
+   :base-migration
    :migration-id
    :migration-load-up-script
    :migration-load-down-script
@@ -33,7 +33,7 @@
   "(\\d{14})-(.*)\.(up|down)\.sql$"
   "Regex used to match migration files")
 
-(defclass local-path-migration (migration)
+(defclass local-path-migration (base-migration)
   ((up-script-path
     :initarg :up-script-path
     :initform (error "Must specify up script path")

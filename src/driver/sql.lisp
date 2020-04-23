@@ -4,7 +4,7 @@
   (:nicknames :migratum.driver.sql)
   (:import-from
    :cl-migratum.core
-   :migration
+   :base-migration
    :migration-id
    :migration-description
    :migration-load-up-script
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS migration (
          (result (cl-dbi:execute query))
          (rows (cl-dbi:fetch-all result)))
     (mapcar (lambda (row)
-              (make-instance 'migration
+              (make-instance 'base-migration
                              :id (getf row :|id|)
                              :description (getf row :|description|)
                              :applied (getf row :|applied|)))

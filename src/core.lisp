@@ -7,7 +7,7 @@
    :cl-migratum.util
    :take)
   (:export
-   :migration
+   :base-migration
    :migration-id
    :migration-description
    :migration-applied
@@ -37,7 +37,7 @@
    :revert-last))
 (in-package :cl-migratum.core)
 
-(defclass migration ()
+(defclass base-migration ()
   ((id
     :type integer
     :initarg :id

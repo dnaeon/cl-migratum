@@ -4,7 +4,7 @@
   (:use :cl)
   (:import-from
    :cl-migratum.core
-   :migration
+   :base-migration
    :migration-id
    :migration-description
    :migration-applied
@@ -47,7 +47,7 @@
    :make-sql-driver)
   (:export
    ;; core
-   :migration
+   :base-migration
    :migration-id
    :migration-description
    :migration-applied
