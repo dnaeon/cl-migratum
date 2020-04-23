@@ -461,10 +461,11 @@ functions on your newly defined class.
 
 The following methods can be overriden, if needed.
 
-| Method                   | Description                                   |
-|--------------------------|-----------------------------------------------|
-| `MIGRATUM:PROVIDER-NAME` | Returns a human-friendly name of the provider |
-| `MIGRATUM:PROVIDER-INIT` | Initializes the provider, if needed           |
+| Method                          | Description                                             |
+|---------------------------------|---------------------------------------------------------|
+| `MIGRATUM:PROVIDER-NAME`        | Returns a human-friendly name of the provider           |
+| `MIGRATUM:PROVIDER-INIT`        | Initializes the provider, if needed                     |
+| `MIGRATUM:PROVIDER-INITIALIZED` | Returns `T` if provider is initialized, `NIL` otherwise |
 
 You can also look at the `MIGRATUM:LOCAL-PATH-PROVIDER` class for some
 example code.
@@ -496,11 +497,12 @@ implemented on drivers.
 
 The following methods can be overriden, if needed.
 
-| Method                     | Description                                   |
-|----------------------------|-----------------------------------------------|
-| `MIGRATUM:DRIVER-INIT`     | Initializes the driver, if needed             |
-| `MIGRATUM:DRIVER-NAME`     | Returns the human-friendly name of the driver |
-| `MIGRATUM:DRIVER-PROVIDER` | Returns the `provider` used by the `driver`   |
+| Method                        | Description                                           |
+|-------------------------------|-------------------------------------------------------|
+| `MIGRATUM:DRIVER-INIT`        | Initializes the driver, if needed                     |
+| `MIGRATUM:DRIVER-NAME`        | Returns the human-friendly name of the driver         |
+| `MIGRATUM:DRIVER-PROVIDER`    | Returns the `provider` used by the `driver`           |
+| `MIGRATUM:DRIVER-INITIALIZED` | Returns `T` if driver is initialized, `NIL` otherwise |
 
 You can check the `MIGRATUM:SQL-DRIVER` class for some example code.
 

@@ -69,7 +69,12 @@
     :initarg :name
     :initform (error "Must specify provider name")
     :accessor provider-name
-    :documentation "Name of the provider"))
+    :documentation "Name of the provider")
+   (initialized
+    :initarg :initialized
+    :initform nil
+    :accessor provider-initialized
+    :documentation "Returns T if provider is initialized, NIL otherwise"))
   (:documentation "Base class for migration providers"))
 
 (defgeneric provider-init (provider &key)
@@ -92,7 +97,12 @@
     :initarg :provider
     :initform (error "Must specify migrations provider")
     :accessor driver-provider
-    :documentation "Provider used by the driver"))
+    :documentation "Provider used by the driver")
+   (initialized
+    :initarg :initialized
+    :initform nil
+    :accessor driver-initialized
+    :documentation "Returns T if driver is initialized, NIL otherwise"))
   (:documentation "Base class for migration drivers"))
 
 (defgeneric driver-init (driver &key)
