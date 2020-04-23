@@ -86,6 +86,10 @@
 (defgeneric provider-create-migration (provider &key id description up down)
   (:documentation "Creates a new migration resource using the given provider"))
 
+(defmethod provider-init ((provider base-provider) &key)
+  (log:debug "Initializing provider ~a" (provider-name provider))
+  (setf (provider-initialized provider t)))
+
 (defclass base-driver ()
   ((name
     :type string
