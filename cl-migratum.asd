@@ -9,7 +9,8 @@
   :author "Marin Atanasov Nikolov <dnaeon@gmail.com>"
   :maintainer "Marin Atanasov Nikolov <dnaeon@gmail.com>"
   :license "BSD 2-Clause"
-  :long-description "Database migrations for Common Lisp"
+  :long-description #.(uiop:read-file-string
+		       (uiop:subpathname *load-pathname* "README.md"))
   :homepage "https://github.com/dnaeon/c-migratum"
   :bug-tracker "https://github.com/dnaeon/c-migratum"
   :source-control "https://github.com/dnaeon/c-migratum"
