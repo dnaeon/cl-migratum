@@ -70,7 +70,8 @@
   "Creates a local path provider using the given path"
   (make-instance 'local-path-provider
                  :name "local-path"
-                 :path path))
+                 :path path
+		 :initialized t))
 
 (defun migration-file-p (path scanner)
   "Predicate used for testing whether a path matches a migration file pattern"
