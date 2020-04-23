@@ -127,6 +127,10 @@
 (defgeneric driver-unregister-migration (driver migration &key)
   (:documentation "Unregisters a previously applied migration"))
 
+(defmethod driver-init ((driver base-driver) &key)
+  (log:debug "Initializing driver ~a" (driver-name driver))
+  (setf (driver-initialized driver) t))
+
 (defun latest-migration (driver)
   "Returns the latest applied migration"
   (first (driver-list-applied driver)))
