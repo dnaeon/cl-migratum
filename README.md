@@ -471,31 +471,38 @@ example code.
 
 ## Implementing DRIVERs
 
-TODO: Document me
+A `driver` is responsible for communicating with the database we are
+migrating and actually executing the upgrade and downgrade scripts.
 
-### DRIVER-INIT
+The driver also takes care of registering applied migrations after
+applying an upgrade script and also unregistering them during
+downgrade, thus it is the drivers' decision how to implement
+registering and unregistering. For example the `sql` builtin driver
+registers applied migrations on the same database it is migrating, but
+a custom driver could choose a different stategy instead, e.g. use a
+key/value store, local files, or some remote endpoint instead.
 
-TODO: Document me
+New drivers can be implemented by subclassing the
+`MIGRATUM:BASE-DRIVER` class. The following methods should be
+implemented on drivers.
 
-### DRIVER-LIST-APPLIED
+| Method                                 | Description                                |
+|----------------------------------------|--------------------------------------------|
+| `MIGRATUM:DRIVER-LIST-APPLIED`         | Returns the list of applied migrations     |
+| `MIGRATUM:DRIVER-REGISTER-MIGRATION`   | Registers a successfully applied migration |
+| `MIGRATUM:DRIVER-UNREGISTER-MIGRATION` | Unregisters previously applied migration   |
+| `MIGRATUM:DRIVER-APPLY-UP-MIGRATION`   | Executes the upgrade script                |
+| `MIGRATUM:DRIVER-APPLY-DOWN-MIGRATION` | Executes the downgrade script              |
 
-TODO: Document me
+The following methods can be overriden, if needed.
 
-### DRIVER-APPLY-UP-MIGRATION
+| Method                     | Description                                   |
+|----------------------------|-----------------------------------------------|
+| `MIGRATUM:DRIVER-INIT`     | Initializes the driver, if needed             |
+| `MIGRATUM:DRIVER-NAME`     | Returns the human-friendly name of the driver |
+| `MIGRATUM:DRIVER-PROVIDER` | Returns the `provider` used by the `driver`   |
 
-TODO: Document me
-
-### DRIVER-APPLY-DOWN-MIGRATION
-
-TODO: Document me
-
-### DRIVER-REGISTER-MIGRATION
-
-TODO: Document me
-
-### DRIVER-UNREGISTER-MIGRATION
-
-TODO: Document me
+You can check the `MIGRATUM:SQL-DRIVER` class for some example code.
 
 ## Tests
 
