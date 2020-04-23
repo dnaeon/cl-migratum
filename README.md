@@ -438,19 +438,34 @@ the `PROVIDER-LIST-MIGRATIONS` function.
 
 ## Implementing new providers
 
-TODO: Document me
+You can implement custom `providers`, which can discover migration
+resources from various sources, e.g. local path, remote HTTP endpoints,
+etc.
 
-### PROVIDER-INIT
+Each `provider` determines the rules, which identify a resource as a
+valid migration, so custom logic for discovering them can be
+implemented by using your own provider. For example the `local-path`
+provider considers files to be valid migrations, if they match a given
+regex pattern.
 
-TODO: Document me
+In order to create a new provider you can subclass the
+`MIGRATUM:BASE-PROVIDER` class and implement the following generic
+functions on your newly defined class.
 
-### PROVIDER-LIST-MIGRATIONS
+| Method                               | Description                                |
+|--------------------------------------|--------------------------------------------|
+| `MIGRATUM:PROVIDER-LIST-MIGRATIONS`  | Responsible for discovering migrations     |
+| `MIGRATUM:PROVIDER-CREATE-MIGRATION` | Creates a new migration using the provider |
 
-TODO: Document me
+The following methods can be overriden, if needed.
 
-### PROVIDER-CREATE-MIGRATION
+| Method                   | Description                                   |
+|--------------------------|-----------------------------------------------|
+| `MIGRATUM:PROVIDER-NAME` | Returns a human-friendly name of the provider |
+| `MIGRATUM:PROVIDER-INIT` | Initializes the provider, if needed           |
 
-TODO: Document me
+You can also look at the `MIGRATUM:LOCAL-PATH-PROVIDER` class for some
+example code.
 
 ## Implementing DRIVERs
 
