@@ -470,7 +470,7 @@ The following methods can be overriden, if needed.
 You can also look at the `MIGRATUM:LOCAL-PATH-PROVIDER` class for some
 example code.
 
-## Implementing DRIVERs
+## Implementing new drivers
 
 A `driver` is responsible for communicating with the database we are
 migrating and actually executing the upgrade and downgrade scripts.
