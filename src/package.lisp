@@ -33,13 +33,8 @@
    :apply-next
    :revert-last)
   (:import-from
-   :cl-migratum.provider.local-path
-   :local-path-provider
-   :local-path-migration
-   :local-path-migration-up-script-path
-   :local-path-migration-down-script-path
-   :local-path-provider-path
-   :make-local-path-provider)
+   :cl-migratum.util
+   :make-migration-id)
   (:import-from
    :cl-migratum.driver.sql
    :sql-driver
@@ -76,13 +71,8 @@
    :apply-next
    :revert-last
 
-   ;; provider.local-path
-   :local-path-provider
-   :local-path-migration
-   :local-path-migration-up-script-path
-   :local-path-migration-down-script-path
-   :local-path-provider-path
-   :make-local-path-provider
+   ;; util
+   :make-migration-id
 
    ;; driver.sql
    :sql-driver

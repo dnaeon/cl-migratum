@@ -3,22 +3,20 @@
   (:use :cl)
   (:nicknames :migratum.provider.local-path)
   (:import-from :log)
-  (:import-from :local-time)
   (:import-from :cl-ppcre)
   (:import-from :uiop)
   (:import-from
-   :cl-migratum.util
-   :make-migration-id)
-  (:import-from
-   :cl-migratum.core
+   :migratum
    :base-provider
    :base-migration
    :migration-id
    :migration-load-up-script
    :migration-load-down-script
    :provider-list-migrations
-   :provider-create-migration)
+   :provider-create-migration
+   :make-migration-id)
   (:export
+   :*migration-file-regex*
    :migration-file-p
    :find-migration-files
    :local-path-provider
