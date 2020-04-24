@@ -6,7 +6,7 @@
   (:import-from :cl-ppcre)
   (:import-from :uiop)
   (:import-from
-   :migratum
+   :cl-migratum
    :base-provider
    :base-migration
    :migration-id

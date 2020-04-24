@@ -35,11 +35,6 @@
   (:import-from
    :cl-migratum.util
    :make-migration-id)
-  (:import-from
-   :cl-migratum.driver.sql
-   :sql-driver
-   :sql-driver-connection
-   :make-sql-driver)
   (:export
    ;; core
    :base-migration
@@ -72,10 +67,5 @@
    :revert-last
 
    ;; util
-   :make-migration-id
-
-   ;; driver.sql
-   :sql-driver
-   :sql-driver-connection
-   :make-sql-driver))
+   :make-migration-id))
 (in-package :cl-migratum)

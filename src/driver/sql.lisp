@@ -3,7 +3,7 @@
   (:use :cl)
   (:nicknames :migratum.driver.sql)
   (:import-from
-   :cl-migratum.core
+   :cl-migratum
    :base-migration
    :migration-id
    :migration-description

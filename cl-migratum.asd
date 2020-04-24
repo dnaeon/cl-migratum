@@ -15,8 +15,7 @@
   :bug-tracker "https://github.com/dnaeon/cl-migratum"
   :source-control "https://github.com/dnaeon/cl-migratum"
   :long-name "cl-migratum"
-  :depends-on (:cl-dbi
-               :local-time
+  :depends-on (:local-time
 	       :cl-ascii-table
                :log4cl)
   :components ((:module "util"
@@ -26,11 +25,7 @@
                 :pathname #P"src/"
                 :depends-on ("util")
                 :components ((:file "core")))
-               (:module "driver"
-                :pathname #P"src/driver/"
-                :depends-on ("core")
-                :components ((:file "sql")))
                (:module "client-package"
                 :pathname #P"src/"
-                :depends-on ("core" "driver")
+                :depends-on ("core" "util")
                 :components ((:file "package")))))
