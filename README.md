@@ -53,9 +53,9 @@ sequences.
 
 The following providers are supported by `cl-migratum`.
 
-| Name         | Description                                                      |
-|--------------|------------------------------------------------------------------|
-| `local-path` | Provider that can discover migration resources from a local path |
+| Name         | Description                                                      | System                            |
+|--------------|------------------------------------------------------------------|-----------------------------------|
+| `local-path` | Provider that can discover migration resources from a local path | `cl-migratum.provider.local-path` |
 
 ### Driver
 
@@ -71,9 +71,9 @@ can be applied against the database it is connected to.
 
 The following drivers are supported by `cl-migratum`.
 
-| Name  | Description                                                                                                        |
-|-------|--------------------------------------------------------------------------------------------------------------------|
-| `sql` | Driver for performing schema migrations against a SQL database using [CL-DBI](https://github.com/fukamachi/cl-dbi) |
+| Name  | Description                                                                                                        | System                   |
+|-------|--------------------------------------------------------------------------------------------------------------------|--------------------------|
+| `sql` | Driver for performing schema migrations against a SQL database using [CL-DBI](https://github.com/fukamachi/cl-dbi) | `cl-migratum.driver.sql` |
 
 ## Usage
 
@@ -82,12 +82,19 @@ The following section contains some examples to get you started.
 ### Create Provider
 
 First, we will create a new `provider` that can discover migration files from a
-local path. In order to create a local-path provider we will use the
-`MIGRATUM:MAKE-LOCAL-PATH-PROVIDER` function.
+local path. In order to create a `local-path` provider we need to load the
+system for the respective provider.
+
+``` common-lisp
+CL-USER> (ql:quickload :cl-migratum.provider.local-path)
+
+```
+
+Once you load the system we can create a `local-path` provider.
 
 ``` common-lisp
 CL-USER> (defparameter *provider*
-           (migratum:make-local-path-provider #P"~/Projects/lisp/cl-migratum/migrations"))
+           (migratum.provider.local-path:make-local-path-provider #P"~/Projects/lisp/cl-migratum/migrations"))
 *PROVIDER*
 ```
 
@@ -135,14 +142,20 @@ CL-USER> (mapcar #'migratum:migration-id
 
 ### Create Driver
 
-Once we have a driver for discovering migration resources we need to
+Once we have a provider for discovering migration resources we need to
 create a driver, which can be used to communicate with the database
 we want to apply migrations on.
 
-Here is how we can create a `SQL` driver. The SQL driver
-uses [CL-DBI](https://github.com/fukamachi/cl-dbi) interface
-to communicate with the database, so we will first create a
-database connection.
+Here is how we can create a `SQL` driver. First, lets load the
+system, which provides that driver.
+
+``` common-lisp
+CL-USER> (ql:quickload :cl-migratum.driver.sql)
+```
+
+The SQL driver uses [CL-DBI](https://github.com/fukamachi/cl-dbi)
+interface to communicate with the database, so we will need to create
+a database connection.
 
 ``` common-lisp
 CL-USER> (defparameter *conn*
@@ -380,7 +393,7 @@ CL-USER> (migratum:migration-load-down-script *migration*)
 "DROP TABLE fubar;"
 ```
 
-## Debug logging
+### Debug logging
 
 `cl-migratum` uses [log4cl](https://github.com/sharplispers/log4cl),
 so you can enable debug logging, if needed.
