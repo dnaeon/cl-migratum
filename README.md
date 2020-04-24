@@ -168,7 +168,7 @@ provider and connection.
 
 ``` common-lisp
 CL-USER> (defparameter *driver*
-           (migratum:make-sql-driver *provider* *conn*))
+           (migratum.driver.sql:make-sql-driver *provider* *conn*))
 *DRIVER*
 ```
 
