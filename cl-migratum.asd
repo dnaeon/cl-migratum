@@ -28,4 +28,5 @@
                (:module "client-package"
                 :pathname #P"src/"
                 :depends-on ("core" "util")
-                :components ((:file "package")))))
+                :components ((:file "package"))))
+  :in-order-to ((test-op (test-op "cl-migratum.test"))))
