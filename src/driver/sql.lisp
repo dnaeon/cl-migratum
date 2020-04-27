@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS migration (
                              :applied (getf row :|applied|)))
             rows)))
 
-(defmethod driver-register-migration ((driver sql-driver) (migration migration) &key)
+(defmethod driver-register-migration ((driver sql-driver) (migration base-migration) &key)
   (log:debug "Registering migration as successful: ~a" (migration-id migration))
   (let* ((connection (sql-driver-connection driver))
          (id (migration-id migration))
@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS migration (
     (cl-dbi:with-transaction connection
       (cl-dbi:execute query (list id description)))))
 
-(defmethod driver-unregister-migration ((driver sql-driver) (migration migration) &key)
+(defmethod driver-unregister-migration ((driver sql-driver) (migration base-migration) &key)
   (log:debug "Unregistering migration: ~a" (migration-id migration))
   (let* ((connection (sql-driver-connection driver))
          (id (migration-id migration))
@@ -80,11 +80,11 @@ CREATE TABLE IF NOT EXISTS migration (
     (cl-dbi:with-transaction connection
       (cl-dbi:execute query (list id)))))
 
-(defmethod driver-apply-up-migration ((driver sql-driver) (migration migration) &key)
+(defmethod driver-apply-up-migration ((driver sql-driver) (migration base-migration) &key)
   (log:debug "Applying upgrade migration: ~a - ~a" (migration-id migration) (migration-description migration))
   (sql-driver-apply-migration driver migration #'migration-load-up-script))
 
-(defmethod driver-apply-down-migration ((driver sql-driver) (migration migration) &key)
+(defmethod driver-apply-down-migration ((driver sql-driver) (migration base-migration) &key)
   (log:debug "Applying downgrade migration: ~a - ~a" (migration-id migration) (migration-description migration))
   (sql-driver-apply-migration driver migration #'migration-load-down-script))
 
