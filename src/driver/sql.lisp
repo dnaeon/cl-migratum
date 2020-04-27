@@ -13,6 +13,7 @@
    :driver-name
    :driver-provider
    :driver-init
+   :driver-initialized
    :driver-list-applied
    :driver-apply-up-migration
    :driver-apply-down-migration
@@ -48,7 +49,8 @@ CREATE TABLE IF NOT EXISTS migration (
   (let* ((connection (sql-driver-connection driver))
          (query (cl-dbi:prepare connection *sql-init-schema*)))
     (cl-dbi:with-transaction connection
-      (cl-dbi:execute query))))
+      (cl-dbi:execute query))
+    (setf (driver-initialized driver) t)))
 
 (defmethod driver-list-applied ((driver sql-driver) &key)
   (log:debug "Fetching list of applied migrations")
