@@ -15,7 +15,13 @@
    :migration-id
    :migration-description
    :migration-load-up-script
-   :migration-load-down-script)
+   :migration-load-down-script
+   :driver-name
+   :driver-init
+   :driver-initialized
+   :driver-list-applied
+   :contains-applied-migrations-p
+   :list-pending)
   (:import-from
    :migratum.provider.local-path
    :make-local-path-provider
@@ -34,7 +40,7 @@
   nil
   "CL-DBI connection used during tests")
 
-(defparameter *sql-driver*
+(defparameter *driver*
   nil
   "SQL driver used during tests")
 
@@ -52,7 +58,7 @@
         (cl-dbi:connect :sqlite3
                         :database-name (merge-pathnames (make-pathname :name "cl-migratum" :type "db")
                                                         *tmpdir*)))
-  (setf *sql-driver*
+  (setf *driver*
         (make-sql-driver *provider* *sqlite-conn*)))
 
 (teardown
@@ -91,3 +97,26 @@
                    (migration-load-down-script migration)))
       (uiop:delete-file-if-exists (local-path-migration-up-script-path migration))
       (uiop:delete-file-if-exists (local-path-migration-down-script-path migration)))))
+
+(deftest sql-driver
+  (testing "driver-name"
+    (ok (string= "SQL" (driver-name *driver*))))
+
+  (testing "driver-initialized"
+    (ok (eq nil (driver-initialized *driver*)))) ;; Driver is not yet initialized
+
+  (testing "driver-init"
+    (ok (eq t (driver-init *driver*)))
+    (ok (eq t (driver-initialized *driver*)))) ;; Driver should be initialized now
+
+  (testing "driver-list-applied"
+    (ok (eq nil (driver-list-applied *driver*)))) ;; No migrations applied yet
+
+  (testing "contains-applied-migrations-p"
+    (ok (eq nil (contains-applied-migrations-p *driver*))))
+
+  (testing "list-pending"
+    (let ((pending (list-pending *driver*)))
+      (ok (= 3 (length pending)))
+      (ok (equal (list 20200421173657 20200421173908 20200421180337)
+		 (mapcar #'migration-id pending))))))
