@@ -530,7 +530,28 @@ You can check the `MIGRATUM:SQL-DRIVER` class for some example code.
 
 ## Tests
 
-TODO: Document me
+Tests are provided as part of the `cl-migratum.test` system.
+
+In order to run the tests you can evaluate the following expressions.
+
+``` common-lisp
+CL-USER> (ql:quickload :cl-migratum.test)
+CL-USER> (asdf:test-system :cl-migratum.test)
+```
+
+Or you can run the tests in a Docker container instead.
+
+First, build the Docker image.
+
+``` shell
+docker build -t cl-migratum .
+```
+
+Run the tests.
+
+``` shell
+docker run --rm cl-migratum
+```
 
 ## Contributing
 
