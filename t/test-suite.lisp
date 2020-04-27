@@ -8,6 +8,7 @@
   (:import-from
    :migratum
    :provider-init
+   :provider-name
    :provider-initialized
    :provider-list-migrations
    :provider-create-migration
@@ -59,6 +60,9 @@
     (uiop:delete-directory-tree *tmpdir* :validate t)))
 
 (deftest local-path-provider
+  (testing "provider-name"
+    (ok (string= "local-path" (provider-name *provider*))))
+
   (testing "provider-init"
     (ok (eq t (provider-init *provider*))))
 
