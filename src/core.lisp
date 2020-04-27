@@ -14,6 +14,8 @@
    :migration-load-up-script
    :migration-load-down-script
    :base-provider
+   :provider-init
+   :provider-initialized
    :provider-name
    :provider-list-migrations
    :provider-create-migration
@@ -22,6 +24,7 @@
    :driver-name
    :driver-provider
    :driver-init
+   :driver-initialized
    :driver-list-applied
    :driver-register-migration
    :driver-unregister-migration
