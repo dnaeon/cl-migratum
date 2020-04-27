@@ -31,4 +31,4 @@
                 :pathname #P"t/"
                 :depends-on ("test-migrations")
                 :components ((:file "test-suite"))))
-  :perform (test-op (op c) (uiop:symbol-call :rove :run-suite :cl-migratum-test)))
+  :perform (test-op (op c) (uiop:symbol-call :rove :run-suite :cl-migratum.test)))
