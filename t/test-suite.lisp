@@ -12,6 +12,7 @@
    :provider-initialized
    :provider-list-migrations
    :provider-create-migration
+   :provider-find-migration-by-id
    :migration-id
    :migration-description
    :migration-load-up-script
@@ -21,7 +22,11 @@
    :driver-initialized
    :driver-list-applied
    :contains-applied-migrations-p
-   :list-pending)
+   :latest-migration
+   :list-pending
+   :apply-pending
+   :revert-last
+   :apply-next)
   (:import-from
    :migratum.provider.local-path
    :make-local-path-provider
@@ -70,10 +75,10 @@
     (ok (string= "local-path" (provider-name *provider*))))
 
   (testing "provider-init"
-    (ok (eq t (provider-init *provider*))))
+    (ok (provider-init *provider*)))
 
   (testing "provider-initialized"
-    (ok (eq t (provider-initialized *provider*))))
+    (ok (provider-initialized *provider*)))
 
   (testing "provider-list-migrations"
     (let* ((discovered (provider-list-migrations *provider*))
@@ -83,6 +88,10 @@
                  (mapcar #'migration-id migrations)))
       (ok (equal (list "create-table-foo" "create-table-bar" "create-table-qux")
                  (mapcar #'migration-description migrations)))))
+
+  (testing "provider-find-migration-by-id"
+    (ok (provider-find-migration-by-id *provider* 20200421173657))
+    (ng (provider-find-migration-by-id *provider* 'no-such-id)))
 
   (testing "provider-create-migration"
     (let* ((migration (provider-create-migration *provider*
@@ -110,7 +119,7 @@
     (ok (eq t (driver-initialized *driver*)))) ;; Driver should be initialized now
 
   (testing "driver-list-applied"
-    (ok (eq nil (driver-list-applied *driver*)))) ;; No migrations applied yet
+    (ng (driver-list-applied *driver*))) ;; No migrations applied yet
 
   (testing "contains-applied-migrations-p"
     (ok (eq nil (contains-applied-migrations-p *driver*))))
@@ -119,4 +128,30 @@
     (let ((pending (list-pending *driver*)))
       (ok (= 3 (length pending)))
       (ok (equal (list 20200421173657 20200421173908 20200421180337)
-		 (mapcar #'migration-id pending))))))
+		 (mapcar #'migration-id pending)))))
+
+  (testing "apply-pending"
+    (apply-pending *driver*)
+    (let ((applied (driver-list-applied *driver*)))
+      (ok (= 3 (length applied)))
+      (ok (equal (list 20200421180337 20200421173908 20200421173657)
+		 (mapcar #'migration-id applied)))))
+
+  (testing "latest-migration"
+    (ok (= 20200421180337 (migration-id (latest-migration *driver*)))))
+
+  (testing "revert-last"
+    (revert-last *driver* :count 3)
+    (ng (contains-applied-migrations-p *driver*))
+    (ng (driver-list-applied *driver*)))
+
+  (testing "apply-next"
+    (ng (contains-applied-migrations-p *driver*))
+    (apply-next *driver*)
+    (ok (= 20200421173657 (migration-id (latest-migration *driver*))))
+    (apply-next *driver*)
+    (ok (= 20200421173908 (migration-id (latest-migration *driver*))))
+    (apply-next *driver*)
+    (ok (= 20200421180337 (migration-id (latest-migration *driver*))))
+    (apply-next *driver*) ;; No more pending migrations at this point
+    (ok (= 20200421180337 (migration-id (latest-migration *driver*)))))) ;; ID did not change, since previous migration
