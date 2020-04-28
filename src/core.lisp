@@ -169,9 +169,9 @@
     (when pending
       (ascii-table:display table))))
 
-(defun display-applied (driver)
+(defun display-applied (driver &rest rest)
   "Displays the applied migrations in a table"
-  (let ((applied (driver-list-applied driver))
+  (let ((applied (apply #'driver-list-applied driver rest))
         (table (ascii-table:make-table (list "ID" "DESCRIPTION" "APPLIED") :header "APPLIED MIGRATIONS")))
     (dolist (migration applied)
       (ascii-table:add-row table (list (migration-id migration)
