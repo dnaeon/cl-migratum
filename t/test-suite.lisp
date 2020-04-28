@@ -137,6 +137,12 @@
       (ok (equal (list 20200421180337 20200421173908 20200421173657)
 		 (mapcar #'migration-id applied)))))
 
+  (testing "pagination"
+    (ok (= 1 (length (driver-list-applied *driver* :offset 0 :limit 1))))
+    (ok (= 1 (length (driver-list-applied *driver* :offset 1 :limit 1))))
+    (ok (= 2 (length (driver-list-applied *driver* :offset 1 :limit 2))))
+    (ng (driver-list-applied *driver* :offset 100 :limit 100)))
+
   (testing "latest-migration"
     (ok (= 20200421180337 (migration-id (latest-migration *driver*)))))
 
