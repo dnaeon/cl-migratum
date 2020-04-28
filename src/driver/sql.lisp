@@ -30,7 +30,7 @@
 (defparameter *sql-init-schema*
   "
 CREATE TABLE IF NOT EXISTS migration (
-    id INTEGER PRIMARY KEY,
+    id BIGINT PRIMARY KEY,
     description CHARACTER VARYING(255) NOT NULL,
     applied TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );"
