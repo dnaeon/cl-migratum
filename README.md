@@ -299,6 +299,25 @@ NIL
 The output of these functions will be the applied migrations in
 descending order by their id, first one being the most recent one.
 
+The `SQL` driver by default will fetch the last 100 applied
+migrations. You can control this behaviour by using the `:offset` and
+`:limit` keyword parameters, which allows you to fetch applied
+migrations in pages.
+
+For example, if you are interested only in the last ten applied
+migrations you can evaluate the following expression.
+
+``` common-lisp
+CL-USER> (migratum:display-applied *driver* :limit 10)
+```
+
+Or if you want to skip the first ten migrations, you can evaluate
+this expression instead.
+
+``` common-lisp
+CL-USER> (migratum.display-applied *driver* :offset 10 :limit 10)
+```
+
 ### Stepping through migrations
 
 Using the following functions you can step through migrations.
