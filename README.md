@@ -94,7 +94,7 @@ Once you load the system we can create a `local-path` provider.
 
 ``` common-lisp
 CL-USER> (defparameter *provider*
-           (migratum.provider.local-path:make-local-path-provider #P"~/Projects/lisp/cl-migratum/migrations"))
+           (migratum.provider.local-path:make-local-path-provider #P"~/Projects/lisp/cl-migratum/t/migrations"))
 *PROVIDER*
 ```
 
@@ -108,7 +108,7 @@ The `LOCAL-PATH-PROVIDER` discovers migration files which match the following pa
 A provider can optionally be initialized, which can be done using the
 `MIGRATUM:PROVIDER-INIT` generic function. Not all providers would
 require initialization, but some will and therefore it is good that
-always initialize them first.
+you always initialize them first.
 
 In order to list the migrations provided by a `provider` you can use
 the `MIGRATUM:PROVIDER-LIST-MIGRATIONS` generic function, e.g.
@@ -489,7 +489,8 @@ The following methods can be overriden, if needed.
 | `MIGRATUM:PROVIDER-INIT`        | Initializes the provider, if needed                     |
 | `MIGRATUM:PROVIDER-INITIALIZED` | Returns `T` if provider is initialized, `NIL` otherwise |
 
-You can also look at the `MIGRATUM:LOCAL-PATH-PROVIDER` class for some
+You can also check the [local-path
+provider](./src/provider/local-path.lisp) implementation for some
 example code.
 
 ## Implementing new drivers
@@ -526,7 +527,8 @@ The following methods can be overriden, if needed.
 | `MIGRATUM:DRIVER-PROVIDER`    | Returns the `provider` used by the `driver`           |
 | `MIGRATUM:DRIVER-INITIALIZED` | Returns `T` if driver is initialized, `NIL` otherwise |
 
-You can check the `MIGRATUM:SQL-DRIVER` class for some example code.
+You can check the [sql driver](./src/driver/sql.lisp) implementation
+for some example code.
 
 ## Tests
 
