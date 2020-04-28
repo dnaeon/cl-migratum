@@ -52,11 +52,11 @@ CREATE TABLE IF NOT EXISTS migration (
       (cl-dbi:execute query))
     (setf (driver-initialized driver) t)))
 
-(defmethod driver-list-applied ((driver sql-driver) &key)
+(defmethod driver-list-applied ((driver sql-driver) &key (offset 0) (limit 100))
   (log:debug "Fetching list of applied migrations")
   (let* ((connection (sql-driver-connection driver))
-         (query (cl-dbi:prepare connection "SELECT * FROM migration ORDER BY id DESC"))
-         (result (cl-dbi:execute query))
+         (query (cl-dbi:prepare connection "SELECT * FROM migration ORDER BY id DESC LIMIT ? OFFSET ?"))
+         (result (cl-dbi:execute query (list limit offset)))
          (rows (cl-dbi:fetch-all result)))
     (mapcar (lambda (row)
               (make-instance 'base-migration
