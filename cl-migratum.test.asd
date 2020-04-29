@@ -21,12 +21,12 @@
                :rove)
   :components ((:module "test-migrations"
                 :pathname #P"t/migrations/"
-                :components ((:static-file "20200421173657-create-table-foo.down.sql")
-                             (:static-file "20200421173657-create-table-foo.up.sql")
-                             (:static-file "20200421173908-create-table-bar.down.sql")
-                             (:static-file "20200421173908-create-table-bar.up.sql")
-                             (:static-file "20200421180337-create-table-qux.down.sql")
-                             (:static-file "20200421180337-create-table-qux.up.sql")))
+                :components ((:static-file "20200421173657-create_table_foo.down.sql")
+                             (:static-file "20200421173657-create_table_foo.up.sql")
+                             (:static-file "20200421173908-create_table_bar.down.sql")
+                             (:static-file "20200421173908-create_table_bar.up.sql")
+                             (:static-file "20200421180337-create_table_qux.down.sql")
+                             (:static-file "20200421180337-create_table_qux.up.sql")))
                (:module "tests"
                 :pathname #P"t/"
                 :depends-on ("test-migrations")
