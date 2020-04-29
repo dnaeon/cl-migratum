@@ -99,7 +99,7 @@
 						 :up "CREATE TABLE cl_migratum_test (id INTEGER PRIMARY KEY);"
 						 :down "DROP TABLE cl_migratum_test;")))
       (ok (numberp (migration-id migration)))
-      (ok (string= "my-new-migration" (migration-description migration)))
+      (ok (string= "my_new_migration" (migration-description migration)))
       (ok (string= "CREATE TABLE cl_migratum_test (id INTEGER PRIMARY KEY);"
                    (migration-load-up-script migration)))
       (ok (string= "DROP TABLE cl_migratum_test;"
