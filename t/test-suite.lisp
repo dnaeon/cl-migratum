@@ -95,9 +95,9 @@
 
   (testing "provider-create-migration"
     (let* ((migration (provider-create-migration *provider*
-						 :description "my-new-migration"
-						 :up "CREATE TABLE cl_migratum_test (id INTEGER PRIMARY KEY);"
-						 :down "DROP TABLE cl_migratum_test;")))
+                                                 :description "my-new-migration"
+                                                 :up "CREATE TABLE cl_migratum_test (id INTEGER PRIMARY KEY);"
+                                                 :down "DROP TABLE cl_migratum_test;")))
       (ok (numberp (migration-id migration)))
       (ok (string= "my_new_migration" (migration-description migration)))
       (ok (string= "CREATE TABLE cl_migratum_test (id INTEGER PRIMARY KEY);"
@@ -128,14 +128,14 @@
     (let ((pending (list-pending *driver*)))
       (ok (= 3 (length pending)))
       (ok (equal (list 20200421173657 20200421173908 20200421180337)
-		 (mapcar #'migration-id pending)))))
+                 (mapcar #'migration-id pending)))))
 
   (testing "apply-pending"
     (apply-pending *driver*)
     (let ((applied (driver-list-applied *driver*)))
       (ok (= 3 (length applied)))
       (ok (equal (list 20200421180337 20200421173908 20200421173657)
-		 (mapcar #'migration-id applied)))))
+                 (mapcar #'migration-id applied)))))
 
   (testing "pagination"
     (ok (= 1 (length (driver-list-applied *driver* :offset 0 :limit 1))))
