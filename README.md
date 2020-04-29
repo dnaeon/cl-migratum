@@ -94,7 +94,7 @@ Once you load the system we can create a `local-path` provider.
 
 ``` common-lisp
 CL-USER> (defparameter *provider*
-           (migratum.provider.local-path:make-local-path-provider #P"~/Projects/lisp/cl-migratum/t/migrations"))
+           (migratum.provider.local-path:make-local-path-provider #P"~/Projects/lisp/cl-migratum/t/migrations/"))
 *PROVIDER*
 ```
 
