@@ -86,7 +86,7 @@
       (ok (= 3 (length migrations)))
       (ok (equal (list 20200421173657 20200421173908 20200421180337)
                  (mapcar #'migration-id migrations)))
-      (ok (equal (list "create-table-foo" "create-table-bar" "create-table-qux")
+      (ok (equal (list "create_table_foo" "create_table_bar" "create_table_qux")
                  (mapcar #'migration-description migrations)))))
 
   (testing "provider-find-migration-by-id"
