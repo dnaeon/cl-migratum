@@ -19,6 +19,7 @@
    :*migration-file-regex*
    :migration-file-p
    :find-migration-files
+   :normalize-description
    :local-path-provider
    :local-path-migration
    :local-path-migration-up-script-path
@@ -69,7 +70,7 @@
   (make-instance 'local-path-provider
                  :name "local-path"
                  :path path
-		 :initialized t))
+                 :initialized t))
 
 (defun migration-file-p (path scanner)
   "Predicate used for testing whether a path matches a migration file pattern"
@@ -108,6 +109,13 @@ GROUP-MIGRATION-FILES-BY id function."
                (getf x indicator))
         :test test))
 
+(defun normalize-description (description)
+  "Normalizes the description of the migration, which will be
+   used as part of the migration filename"
+  (cl-ppcre:regex-replace-all "\\s|-"
+                              (string-trim #(#\Space) description)
+                              "_"))
+
 (defmethod provider-list-migrations ((provider local-path-provider) &key)
   (log:debug "Discovering migration files from path ~a" (local-path-provider-path provider))
   (let* ((path (local-path-provider-path provider))
@@ -133,7 +141,7 @@ GROUP-MIGRATION-FILES-BY id function."
   (log:debug "Creating new migration in path ~a" (local-path-provider-path provider))
   (let* ((provider-path (slot-value provider 'path))
          (id (or id (make-migration-id)))
-         (description (or description "new-migration"))
+         (description (normalize-description (or description "new migration")))
          (up-content (or up ""))
          (down-content (or down ""))
          (up-file-name (format nil "~a-~a.up" id description))
