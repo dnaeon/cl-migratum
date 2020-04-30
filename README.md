@@ -208,9 +208,9 @@ CL-USER> (migratum:display-pending *driver*)
 +----------------+------------------+
 | ID             | DESCRIPTION      |
 +----------------+------------------+
-| 20200421173657 | create-table-foo |
-| 20200421173908 | create-table-bar |
-| 20200421180337 | create-table-qux |
+| 20200421173657 | create_table_foo |
+| 20200421173908 | create_table_bar |
+| 20200421180337 | create_table_qux |
 +----------------+------------------+
 | TOTAL          |                3 |
 +----------------+------------------+
@@ -233,11 +233,11 @@ CL-USER> (migratum:apply-pending *driver*)
  <INFO> [18:10:14] cl-migratum.core core.lisp (apply-pending) -
   Found 3 pending migration(s) to be applied
  <INFO> [18:10:14] cl-migratum.core core.lisp (apply-and-register) -
-  Applying migration 20200421173657 - create-table-foo
+  Applying migration 20200421173657 - create_table_foo
  <INFO> [18:10:14] cl-migratum.core core.lisp (apply-and-register) -
-  Applying migration 20200421173908 - create-table-bar
+  Applying migration 20200421173908 - create_table_bar
  <INFO> [18:10:14] cl-migratum.core core.lisp (apply-and-register) -
-  Applying migration 20200421180337 - create-table-qux
+  Applying migration 20200421180337 - create_table_qux
 NIL
 ```
 
@@ -287,9 +287,9 @@ CL-USER> (migratum:display-applied *driver*)
 +----------------+------------------+---------------------+
 | ID             | DESCRIPTION      | APPLIED             |
 +----------------+------------------+---------------------+
-| 20200421180337 | create-table-qux | 2020-04-21 15:17:46 |
-| 20200421173908 | create-table-bar | 2020-04-21 15:14:13 |
-| 20200421173657 | create-table-foo | 2020-04-21 15:12:52 |
+| 20200421180337 | create_table_qux | 2020-04-21 15:17:46 |
+| 20200421173908 | create_table_bar | 2020-04-21 15:14:13 |
+| 20200421173657 | create_table_foo | 2020-04-21 15:12:52 |
 +----------------+------------------+---------------------+
 |                | TOTAL            |                   3 |
 +----------------+------------------+---------------------+
@@ -341,9 +341,9 @@ CL-USER> (migratum:display-pending *driver*)
 +----------------+------------------+
 | ID             | DESCRIPTION      |
 +----------------+------------------+
-| 20200421173657 | create-table-foo |
-| 20200421173908 | create-table-bar |
-| 20200421180337 | create-table-qux |
+| 20200421173657 | create_table_foo |
+| 20200421173908 | create_table_bar |
+| 20200421180337 | create_table_qux |
 +----------------+------------------+
 | TOTAL          |                3 |
 +----------------+------------------+
@@ -355,15 +355,15 @@ We can apply them one by one and verify them as we go.
 ``` common-lisp
 CL-USER> (migratum:apply-next *driver*)
  <INFO> [20:04:25] cl-migratum.core core.lisp (apply-and-register) -
-  Applying migration 20200421173657 - create-table-foo
+  Applying migration 20200421173657 - create_table_foo
 NIL
 CL-USER> (migratum:apply-next *driver*)
  <INFO> [20:04:28] cl-migratum.core core.lisp (apply-and-register) -
-  Applying migration 20200421173908 - create-table-bar
+  Applying migration 20200421173908 - create_table_bar
 NIL
 CL-USER> (migratum:apply-next *driver*)
  <INFO> [20:04:29] cl-migratum.core core.lisp (apply-and-register) -
-  Applying migration 20200421180337 - create-table-qux
+  Applying migration 20200421180337 - create_table_qux
 NIL
 ```
 
@@ -373,11 +373,11 @@ If we want to revert the last three migrations we can use the
 ``` common-lisp
 CL-USER> (migratum:revert-last *driver* :count 3)
  <INFO> [20:06:00] cl-migratum.core core.lisp (revert-and-unregister) -
-  Reverting migration 20200421180337 - create-table-qux
+  Reverting migration 20200421180337 - create_table_qux
  <INFO> [20:06:00] cl-migratum.core core.lisp (revert-and-unregister) -
-  Reverting migration 20200421173908 - create-table-bar
+  Reverting migration 20200421173908 - create_table_bar
  <INFO> [20:06:00] cl-migratum.core core.lisp (revert-and-unregister) -
-  Reverting migration 20200421173657 - create-table-foo
+  Reverting migration 20200421173657 - create_table_foo
 NIL
 ```
 
@@ -393,7 +393,7 @@ the upgrade and downgrade scripts as part of the keyword parameters.
 ``` common-lisp
 CL-USER> (defparameter *migration*
            (migratum:provider-create-migration *provider*
-                                               :description "create-table-fubar"
+                                               :description "create table fubar"
                                                :up "CREATE TABLE fubar (id INTEGER PRIMARY KEY);"
                                                :down "DROP TABLE fubar;"))
 *MIGRATION*
@@ -405,7 +405,7 @@ We can also inspect the newly created migration, e.g.
 CL-USER> (migratum:migration-id *migration*)
 20200421201406
 CL-USER> (migratum:migration-description *migration*)
-"create-table-fubar"
+"create_table_fubar"
 CL-USER> (migratum:migration-load-up-script *migration*)
 "CREATE TABLE fubar (id INTEGER PRIMARY KEY);"
 CL-USER> (migratum:migration-load-down-script *migration*)
