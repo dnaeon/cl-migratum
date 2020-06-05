@@ -26,7 +26,9 @@
                              (:static-file "20200421173908-create_table_bar.down.sql")
                              (:static-file "20200421173908-create_table_bar.up.sql")
                              (:static-file "20200421180337-create_table_qux.down.sql")
-                             (:static-file "20200421180337-create_table_qux.up.sql")))
+                             (:static-file "20200421180337-create_table_qux.up.sql")
+                             (:static-file "20200605144633-multiple_statements.down.sql")
+                             (:static-file "20200605144633-multiple_statements.up.sql")))
                (:module "tests"
                 :pathname #P"t/"
                 :depends-on ("test-migrations")

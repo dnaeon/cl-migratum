@@ -83,10 +83,10 @@
   (testing "provider-list-migrations"
     (let* ((discovered (provider-list-migrations *provider*))
            (migrations (sort discovered #'< :key #'migration-id)))
-      (ok (= 3 (length migrations)))
-      (ok (equal (list 20200421173657 20200421173908 20200421180337)
+      (ok (= 4 (length migrations)))
+      (ok (equal (list 20200421173657 20200421173908 20200421180337 20200605144633)
                  (mapcar #'migration-id migrations)))
-      (ok (equal (list "create_table_foo" "create_table_bar" "create_table_qux")
+      (ok (equal (list "create_table_foo" "create_table_bar" "create_table_qux" "multiple_statements")
                  (mapcar #'migration-description migrations)))))
 
   (testing "provider-find-migration-by-id"
@@ -126,15 +126,15 @@
 
   (testing "list-pending"
     (let ((pending (list-pending *driver*)))
-      (ok (= 3 (length pending)))
-      (ok (equal (list 20200421173657 20200421173908 20200421180337)
+      (ok (= 4 (length pending)))
+      (ok (equal (list 20200421173657 20200421173908 20200421180337 20200605144633)
                  (mapcar #'migration-id pending)))))
 
   (testing "apply-pending"
     (apply-pending *driver*)
     (let ((applied (driver-list-applied *driver*)))
-      (ok (= 3 (length applied)))
-      (ok (equal (list 20200421180337 20200421173908 20200421173657)
+      (ok (= 4 (length applied)))
+      (ok (equal (list 20200605144633 20200421180337 20200421173908 20200421173657)
                  (mapcar #'migration-id applied)))))
 
   (testing "pagination"
@@ -144,10 +144,10 @@
     (ng (driver-list-applied *driver* :offset 100 :limit 100)))
 
   (testing "latest-migration"
-    (ok (= 20200421180337 (migration-id (latest-migration *driver*)))))
+    (ok (= 20200605144633 (migration-id (latest-migration *driver*)))))
 
   (testing "revert-last"
-    (revert-last *driver* :count 3)
+    (revert-last *driver* :count 4)
     (ng (contains-applied-migrations-p *driver*))
     (ng (driver-list-applied *driver*)))
 
@@ -159,5 +159,7 @@
     (ok (= 20200421173908 (migration-id (latest-migration *driver*))))
     (apply-next *driver*)
     (ok (= 20200421180337 (migration-id (latest-migration *driver*))))
+    (apply-next *driver*)
+    (ok (= 20200605144633 (migration-id (latest-migration *driver*))))
     (apply-next *driver*) ;; No more pending migrations at this point
-    (ok (= 20200421180337 (migration-id (latest-migration *driver*)))))) ;; ID did not change, since previous migration
+    (ok (= 20200605144633 (migration-id (latest-migration *driver*)))))) ;; ID did not change, since previous migration

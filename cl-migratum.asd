@@ -10,13 +10,13 @@
   :maintainer "Marin Atanasov Nikolov <dnaeon@gmail.com>"
   :license "BSD 2-Clause"
   :long-description #.(uiop:read-file-string
-		       (uiop:subpathname *load-pathname* "README.md"))
+                       (uiop:subpathname *load-pathname* "README.md"))
   :homepage "https://github.com/dnaeon/cl-migratum"
   :bug-tracker "https://github.com/dnaeon/cl-migratum"
   :source-control "https://github.com/dnaeon/cl-migratum"
   :long-name "cl-migratum"
   :depends-on (:local-time
-	       :cl-ascii-table
+               :cl-ascii-table
                :log4cl)
   :components ((:module "util"
                 :pathname #P"src/"

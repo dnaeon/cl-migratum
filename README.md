@@ -412,6 +412,25 @@ CL-USER> (migratum:migration-load-down-script *migration*)
 "DROP TABLE fubar;"
 ```
 
+### Multiple Statements
+
+If you need to run multiple statements when using the `sql` driver you
+can separate each statement in the migration using the `--;;`
+separator.
+
+The following example migration would create two tables as part of a
+single transaction.
+
+``` sql
+CREATE TABLE foo (
+    id INTEGER PRIMARY KEY
+);
+--;;
+CREATE TABLE bar (
+    id INTEGER PRIMARY KEY
+);
+```
+
 ### Debug logging
 
 `cl-migratum` uses [log4cl](https://github.com/sharplispers/log4cl),

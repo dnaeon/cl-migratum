@@ -21,11 +21,16 @@
    :driver-unregister-migration)
   (:import-from :log)
   (:import-from :cl-dbi)
+  (:import-from :cl-ppcre)
   (:export
    :sql-driver
    :sql-driver-connection
    :make-sql-driver))
 (in-package :cl-migratum.driver.sql)
+
+(defparameter *sql-statement-separator*
+  "--;;"
+  "Separator to use when splitting a migration into multiple statements")
 
 (defparameter *sql-init-schema*
   "
@@ -101,6 +106,8 @@ CREATE TABLE IF NOT EXISTS migration (
   "Applies the script loaded using the migration script loader function"
   (let* ((connection (sql-driver-connection driver))
          (content (funcall migration-script-loader-fun migration))
-         (query (cl-dbi:prepare connection (string-trim #(#\Newline) content))))
+         (statements (cl-ppcre:split *sql-statement-separator* content)))
     (cl-dbi:with-transaction connection
-      (cl-dbi:execute query))))
+      (dolist (statement statements)
+        (let ((stmt (cl-dbi:prepare connection (string-trim #(#\Newline) statement))))
+          (cl-dbi:execute stmt))))))

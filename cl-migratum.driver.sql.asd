@@ -15,6 +15,7 @@
   :long-name "cl-migratum.driver.sql"
   :depends-on (:cl-migratum
                :cl-dbi
+               :cl-ppcre
                :log4cl)
   :components ((:module "driver"
                 :pathname #P"src/driver/"
