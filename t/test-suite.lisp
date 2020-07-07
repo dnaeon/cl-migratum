@@ -37,6 +37,10 @@
    :make-sql-driver))
 (in-package :cl-migratum.test)
 
+(defparameter *migrations-path*
+  (asdf:system-relative-pathname :cl-migratum.test "t/migrations/")
+  "Path to the migration files")
+
 (defparameter *tmpdir*
   nil
   "Temp directory used during tests")
@@ -50,11 +54,7 @@
   "SQL driver used during tests")
 
 (defparameter *provider*
-  (let* ((test-system (asdf:find-system :cl-migratum.test))
-         (test-system-path (slot-value test-system 'asdf/component:absolute-pathname))
-         (test-migrations-path (merge-pathnames (make-pathname :directory '(:relative "t" "migrations"))
-                                                test-system-path)))
-    (make-local-path-provider test-migrations-path))
+  nil
   "Local path provider used during tests")
 
 (setup
@@ -63,10 +63,12 @@
         (cl-dbi:connect :sqlite3
                         :database-name (merge-pathnames (make-pathname :name "cl-migratum" :type "db")
                                                         *tmpdir*)))
+  (setf *provider* (make-local-path-provider *migrations-path*))
   (setf *driver*
         (make-sql-driver *provider* *sqlite-conn*)))
 
 (teardown
+  (cl-dbi:disconnect *sqlite-conn*)
   (when *tmpdir*
     (uiop:delete-directory-tree *tmpdir* :validate t)))
 
