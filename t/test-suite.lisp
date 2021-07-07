@@ -33,6 +33,7 @@
   (:import-from
    :migratum
    :provider-init
+   :provider-shutdown
    :provider-name
    :provider-initialized
    :provider-list-migrations
@@ -44,6 +45,7 @@
    :migration-load-down-script
    :driver-name
    :driver-init
+   :driver-shutdown
    :driver-initialized
    :driver-list-applied
    :contains-applied-migrations-p
@@ -93,7 +95,8 @@
         (make-sql-driver *provider* *sqlite-conn*)))
 
 (teardown
-  (cl-dbi:disconnect *sqlite-conn*)
+  (provider-shutdown *provider*)
+  (driver-shutdown *driver*)
   (when *tmpdir*
     (uiop:delete-directory-tree *tmpdir* :validate t)))
 
