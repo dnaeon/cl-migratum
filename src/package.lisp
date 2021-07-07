@@ -37,6 +37,7 @@
    :migration-load-down-script
    :base-provider
    :provider-init
+   :provider-shutdown
    :provider-initialized
    :provider-name
    :provider-list-migrations
@@ -46,6 +47,7 @@
    :driver-name
    :driver-provider
    :driver-init
+   :driver-shutdown
    :driver-initialized
    :driver-list-applied
    :driver-register-migration
@@ -73,6 +75,7 @@
    :migration-load-down-script
    :base-provider
    :provider-init
+   :provider-shutdown
    :provider-initialized
    :provider-name
    :provider-list-migrations
@@ -82,6 +85,7 @@
    :driver-name
    :driver-provider
    :driver-init
+   :driver-shutdown
    :driver-initialized
    :driver-list-applied
    :driver-register-migration
