@@ -50,6 +50,7 @@
    :driver-name
    :driver-provider
    :driver-init
+   :driver-shutdown
    :driver-initialized
    :driver-list-applied
    :driver-register-migration
@@ -148,6 +149,9 @@
 (defgeneric driver-init (driver &key)
   (:documentation "Initializes the driver, e.g. creates required schema"))
 
+(defgeneric driver-shutdown (driver &key)
+  (:documentation "Shutdowns the driver and cleans up any allocated resources"))
+
 (defgeneric driver-list-applied (driver &key)
   (:documentation "Returns a list of the applied migrations in descending order"))
 
@@ -166,6 +170,10 @@
 (defmethod driver-init ((driver base-driver) &key)
   (log:debug "Initializing driver ~a" (driver-name driver))
   (setf (driver-initialized driver) t))
+
+(defmethod driver-shutdown ((driver base-driver) &key)
+  (log:debug "Shutting down driver ~a" (driver-name driver))
+  (setf (driver-initialized driver) nil))
 
 (defun latest-migration (driver)
   "Returns the latest applied migration"
