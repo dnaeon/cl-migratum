@@ -87,7 +87,6 @@ system for the respective provider.
 
 ``` common-lisp
 CL-USER> (ql:quickload :cl-migratum.provider.local-path)
-
 ```
 
 Once you load the system we can create a `local-path` provider.
@@ -172,11 +171,18 @@ CL-USER> (defparameter *driver*
 *DRIVER*
 ```
 
-### Initialize Driver
+### Initialization
 
-Each driver may require some initialization steps to be executed
-before being able to apply migrations, so make sure that you
-initialize a driver once you create it.
+A `driver` and `provider` may require some initialization steps to be
+executed before being able to apply migrations, so make sure that you
+initialize them.
+
+In order to initialize your `provider` use the
+`MIGRATUM:PROVIDER-INIT` function.
+
+``` common-lisp
+CL-USER> (migratum:provider-init *provider*)
+```
 
 An example requirement for a driver might be to create some required
 database schema used to track which migrations have been applied
@@ -440,6 +446,16 @@ so you can enable debug logging, if needed.
 CL-USER> (log:config :debug)
 ```
 
+### Shutdown / Teardown
+
+Once done with the migrations you should call the cleanup functions of
+the `provider` and `driver`.
+
+``` common-lisp
+CL-USER> (migratum:provider-shutdown *provider*)
+CL-USER> (migratum:driver-shutdown *driver*)
+```
+
 ## Implemeting new migration resources
 
 Generally new migration resources will be implemented along with a
@@ -521,11 +537,12 @@ functions on your newly defined class.
 
 The following methods can be overriden, if needed.
 
-| Method                          | Description                                             |
-|---------------------------------|---------------------------------------------------------|
-| `MIGRATUM:PROVIDER-NAME`        | Returns a human-friendly name of the provider           |
-| `MIGRATUM:PROVIDER-INIT`        | Initializes the provider, if needed                     |
-| `MIGRATUM:PROVIDER-INITIALIZED` | Returns `T` if provider is initialized, `NIL` otherwise |
+| Method                          | Description                                                  |
+|---------------------------------|--------------------------------------------------------------|
+| `MIGRATUM:PROVIDER-NAME`        | Returns a human-friendly name of the provider                |
+| `MIGRATUM:PROVIDER-INIT`        | Initializes the provider, if needed                          |
+| `MIGRATUM:PROVIDER-INITIALIZED` | Returns `T` if provider is initialized, `NIL` otherwise      |
+| `MIGRATUM:PROVIDER-SHUTDOWN`    | Shutdowns the provider and cleans up any allocated resources |
 
 You can also check the [local-path
 provider](./src/provider/local-path.lisp) implementation for some
@@ -558,12 +575,13 @@ implemented on drivers.
 
 The following methods can be overriden, if needed.
 
-| Method                        | Description                                           |
-|-------------------------------|-------------------------------------------------------|
-| `MIGRATUM:DRIVER-INIT`        | Initializes the driver, if needed                     |
-| `MIGRATUM:DRIVER-NAME`        | Returns the human-friendly name of the driver         |
-| `MIGRATUM:DRIVER-PROVIDER`    | Returns the `provider` used by the `driver`           |
-| `MIGRATUM:DRIVER-INITIALIZED` | Returns `T` if driver is initialized, `NIL` otherwise |
+| Method                        | Description                                                |
+|-------------------------------|------------------------------------------------------------|
+| `MIGRATUM:DRIVER-INIT`        | Initializes the driver, if needed                          |
+| `MIGRATUM:DRIVER-NAME`        | Returns the human-friendly name of the driver              |
+| `MIGRATUM:DRIVER-PROVIDER`    | Returns the `provider` used by the `driver`                |
+| `MIGRATUM:DRIVER-INITIALIZED` | Returns `T` if driver is initialized, `NIL` otherwise      |
+| `MIGRATUM:DRIVER-SHUTDOWN`    | Shutdowns the driver and cleans up any allocated resources |
 
 You can check the [sql driver](./src/driver/sql.lisp) implementation
 for some example code.
