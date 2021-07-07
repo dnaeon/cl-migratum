@@ -38,6 +38,7 @@
    :driver-name
    :driver-provider
    :driver-init
+   :driver-shutdown
    :driver-initialized
    :driver-list-applied
    :driver-apply-up-migration
@@ -81,6 +82,12 @@ CREATE TABLE IF NOT EXISTS migration (
     (cl-dbi:with-transaction connection
       (cl-dbi:execute query))
     (setf (driver-initialized driver) t)))
+
+(defmethod driver-shutdown ((driver sql-driver) &key)
+  (log:debug "Shutting down ~a driver" (driver-name driver))
+  (let ((connection (sql-driver-connection driver)))
+    (cl-dbi:disconnect connection))
+  (setf (driver-initialized driver) nil))
 
 (defmethod driver-list-applied ((driver sql-driver) &key (offset 0) (limit 100))
   (log:debug "Fetching list of applied migrations")
