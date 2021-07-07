@@ -40,6 +40,7 @@
    :migration-load-down-script
    :base-provider
    :provider-init
+   :provider-shutdown
    :provider-initialized
    :provider-name
    :provider-list-migrations
@@ -108,6 +109,9 @@
 (defgeneric provider-init (provider &key)
   (:documentation "Initializes the driver, if needed"))
 
+(defgeneric provider-shutdown (provider &key)
+  (:documentation "Shutdowns the provider and cleans up any allocated resources"))
+
 (defgeneric provider-list-migrations (provider &key)
   (:documentation "Returns the list of migration resources discovered by the provider"))
 
@@ -117,6 +121,10 @@
 (defmethod provider-init ((provider base-provider) &key)
   (log:debug "Initializing provider ~a" (provider-name provider))
   (setf (provider-initialized provider) t))
+
+(defmethod provider-shutdown ((provider base-provider) &key)
+  (log:debug "Shutting down provider ~a" (provider-name provider))
+  (setf (provider-initialized provider) nil))
 
 (defclass base-driver ()
   ((name
