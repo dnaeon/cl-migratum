@@ -19,4 +19,4 @@
                :log4cl)
   :components ((:module "driver"
                 :pathname #P"src/driver/"
-                :components ((:file "sql")))))
+                :components ((:file "dbi")))))
