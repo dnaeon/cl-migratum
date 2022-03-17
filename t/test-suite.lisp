@@ -60,8 +60,8 @@
    :local-path-migration-up-script-path
    :local-path-migration-down-script-path)
   (:import-from
-   :migratum.driver.sql
-   :make-sql-driver))
+   :migratum.driver.dbi
+   :make-driver))
 (in-package :cl-migratum.test)
 
 (defparameter *migrations-path*
@@ -78,7 +78,7 @@
 
 (defparameter *driver*
   nil
-  "SQL driver used during tests")
+  "DBI driver used during tests")
 
 (defparameter *provider*
   nil
@@ -92,7 +92,7 @@
                                                         *tmpdir*)))
   (setf *provider* (make-local-path-provider *migrations-path*))
   (setf *driver*
-        (make-sql-driver *provider* *sqlite-conn*)))
+        (make-driver *provider* *sqlite-conn*)))
 
 (teardown
   (provider-shutdown *provider*)
@@ -137,9 +137,9 @@
       (uiop:delete-file-if-exists (local-path-migration-up-script-path migration))
       (uiop:delete-file-if-exists (local-path-migration-down-script-path migration)))))
 
-(deftest sql-driver
+(deftest dbi-driver
   (testing "driver-name"
-    (ok (string= "SQL" (driver-name *driver*))))
+    (ok (string= "DBI" (driver-name *driver*))))
 
   (testing "driver-initialized"
     (ok (eq nil (driver-initialized *driver*)))) ;; Driver is not yet initialized

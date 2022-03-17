@@ -15,7 +15,7 @@
   :long-name "cl-migratum.test"
   :depends-on (:cl-migratum
                :cl-migratum.provider.local-path
-               :cl-migratum.driver.sql
+               :cl-migratum.driver.dbi
                :dbd-sqlite3
                :tmpdir
                :rove)
