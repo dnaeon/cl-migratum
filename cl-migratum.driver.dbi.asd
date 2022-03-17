@@ -1,9 +1,9 @@
-(defpackage :cl-migratum-driver-sql-system
+(defpackage :cl-migratum-driver-dbi-system
   (:use :cl :asdf))
-(in-package :cl-migratum-driver-sql-system)
+(in-package :cl-migratum-driver-dbi-system)
 
-(defsystem "cl-migratum.driver.sql"
-  :name "cl-migratum.driver.sql"
+(defsystem "cl-migratum.driver.dbi"
+  :name "cl-migratum.driver.dbi"
   :description "cl-migratum driver for driving migrations against SQL databases using CL-DBI"
   :version "0.3.0"
   :author "Marin Atanasov Nikolov <dnaeon@gmail.com>"
@@ -12,7 +12,7 @@
   :homepage "https://github.com/dnaeon/cl-migratum"
   :bug-tracker "https://github.com/dnaeon/cl-migratum"
   :source-control "https://github.com/dnaeon/cl-migratum"
-  :long-name "cl-migratum.driver.sql"
+  :long-name "cl-migratum.driver.dbi"
   :depends-on (:cl-migratum
                :cl-dbi
                :cl-ppcre

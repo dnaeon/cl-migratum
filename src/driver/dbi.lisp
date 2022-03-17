@@ -24,9 +24,9 @@
 ;; THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (in-package :cl-user)
-(defpackage :cl-migratum.driver.sql
+(defpackage :cl-migratum.driver.dbi
   (:use :cl)
-  (:nicknames :migratum.driver.sql)
+  (:nicknames :migratum.driver.dbi)
   (:import-from
    :cl-migratum
    :base-migration
@@ -49,10 +49,9 @@
   (:import-from :cl-dbi)
   (:import-from :cl-ppcre)
   (:export
-   :sql-driver
-   :sql-driver-connection
-   :make-sql-driver))
-(in-package :cl-migratum.driver.sql)
+   :dbi-driver
+   :make-driver))
+(in-package :cl-migratum.driver.dbi)
 
 (defparameter *sql-statement-separator*
   "--;;"
@@ -67,31 +66,31 @@ CREATE TABLE IF NOT EXISTS migration (
 );"
   "Schema used by the SQL driver")
 
-(defclass sql-driver (base-driver)
+(defclass dbi-driver (base-driver)
   ((connection
     :initarg :connection
-    :accessor sql-driver-connection
+    :accessor dbi-driver-connection
     :initform (error "Must specify database connection")
     :documentation "CL-DBI connection to use"))
   (:documentation "Driver for performing SQL migrations"))
 
-(defmethod driver-init ((driver sql-driver) &key)
+(defmethod driver-init ((driver dbi-driver) &key)
   (log:debug "Initializing ~a driver" (driver-name driver))
-  (let* ((connection (sql-driver-connection driver))
+  (let* ((connection (dbi-driver-connection driver))
          (query (cl-dbi:prepare connection *sql-init-schema*)))
     (cl-dbi:with-transaction connection
       (cl-dbi:execute query))
     (setf (driver-initialized driver) t)))
 
-(defmethod driver-shutdown ((driver sql-driver) &key)
+(defmethod driver-shutdown ((driver dbi-driver) &key)
   (log:debug "Shutting down ~a driver" (driver-name driver))
-  (let ((connection (sql-driver-connection driver)))
+  (let ((connection (dbi-driver-connection driver)))
     (cl-dbi:disconnect connection))
   (setf (driver-initialized driver) nil))
 
-(defmethod driver-list-applied ((driver sql-driver) &key (offset 0) (limit 100))
+(defmethod driver-list-applied ((driver dbi-driver) &key (offset 0) (limit 100))
   (log:debug "Fetching list of applied migrations")
-  (let* ((connection (sql-driver-connection driver))
+  (let* ((connection (dbi-driver-connection driver))
          (query (cl-dbi:prepare connection "SELECT * FROM migration ORDER BY id DESC LIMIT ? OFFSET ?"))
          (result (cl-dbi:execute query (list limit offset)))
          (rows (cl-dbi:fetch-all result)))
@@ -102,41 +101,41 @@ CREATE TABLE IF NOT EXISTS migration (
                              :applied (getf row :|applied|)))
             rows)))
 
-(defmethod driver-register-migration ((driver sql-driver) (migration base-migration) &key)
+(defmethod driver-register-migration ((driver dbi-driver) (migration base-migration) &key)
   (log:debug "Registering migration as successful: ~a" (migration-id migration))
-  (let* ((connection (sql-driver-connection driver))
+  (let* ((connection (dbi-driver-connection driver))
          (id (migration-id migration))
          (description (migration-description migration))
          (query (cl-dbi:prepare connection "INSERT INTO migration (id, description) VALUES (?, ?)")))
     (cl-dbi:with-transaction connection
       (cl-dbi:execute query (list id description)))))
 
-(defmethod driver-unregister-migration ((driver sql-driver) (migration base-migration) &key)
+(defmethod driver-unregister-migration ((driver dbi-driver) (migration base-migration) &key)
   (log:debug "Unregistering migration: ~a" (migration-id migration))
-  (let* ((connection (sql-driver-connection driver))
+  (let* ((connection (dbi-driver-connection driver))
          (id (migration-id migration))
          (query (cl-dbi:prepare connection "DELETE FROM migration WHERE id = ?")))
     (cl-dbi:with-transaction connection
       (cl-dbi:execute query (list id)))))
 
-(defmethod driver-apply-up-migration ((driver sql-driver) (migration base-migration) &key)
+(defmethod driver-apply-up-migration ((driver dbi-driver) (migration base-migration) &key)
   (log:debug "Applying upgrade migration: ~a - ~a" (migration-id migration) (migration-description migration))
-  (sql-driver-apply-migration driver migration #'migration-load-up-script))
+  (dbi-driver-apply-migration driver migration #'migration-load-up-script))
 
-(defmethod driver-apply-down-migration ((driver sql-driver) (migration base-migration) &key)
+(defmethod driver-apply-down-migration ((driver dbi-driver) (migration base-migration) &key)
   (log:debug "Applying downgrade migration: ~a - ~a" (migration-id migration) (migration-description migration))
-  (sql-driver-apply-migration driver migration #'migration-load-down-script))
+  (dbi-driver-apply-migration driver migration #'migration-load-down-script))
 
-(defun make-sql-driver (provider connection)
+(defun make-driver (provider connection)
   "Creates a driver for performing migrations against a SQL database"
-  (make-instance 'sql-driver
-                 :name "SQL"
+  (make-instance 'dbi-driver
+                 :name "DBI"
                  :provider provider
                  :connection connection))
 
-(defun sql-driver-apply-migration (driver migration migration-script-loader-fun)
+(defun dbi-driver-apply-migration (driver migration migration-script-loader-fun)
   "Applies the script loaded using the migration script loader function"
-  (let* ((connection (sql-driver-connection driver))
+  (let* ((connection (dbi-driver-connection driver))
          (content (funcall migration-script-loader-fun migration))
          (statements (cl-ppcre:split *sql-statement-separator* content)))
     (cl-dbi:with-transaction connection
