@@ -73,7 +73,7 @@ The following drivers are supported by `cl-migratum`.
 
 | Name  | Description                                                                                                        | System                   |
 |-------|--------------------------------------------------------------------------------------------------------------------|--------------------------|
-| `sql` | Driver for performing schema migrations against a SQL database using [CL-DBI](https://github.com/fukamachi/cl-dbi) | `cl-migratum.driver.sql` |
+| `dbi` | Driver for performing schema migrations against a SQL database using [CL-DBI](https://github.com/fukamachi/cl-dbi) | `cl-migratum.driver.dbi` |
 
 ## Usage
 
@@ -145,14 +145,14 @@ Once we have a provider for discovering migration resources we need to
 create a driver, which can be used to communicate with the database
 we want to apply migrations on.
 
-Here is how we can create a `SQL` driver. First, lets load the
-system, which provides that driver.
+Here is how we can create a `dbi` driver. First, lets load the system,
+which provides that driver.
 
 ``` common-lisp
-CL-USER> (ql:quickload :cl-migratum.driver.sql)
+CL-USER> (ql:quickload :cl-migratum.driver.dbi)
 ```
 
-The SQL driver uses [CL-DBI](https://github.com/fukamachi/cl-dbi)
+The `dbi` driver uses [CL-DBI](https://github.com/fukamachi/cl-dbi)
 interface to communicate with the database, so we will need to create
 a database connection.
 
@@ -167,7 +167,7 @@ provider and connection.
 
 ``` common-lisp
 CL-USER> (defparameter *driver*
-           (migratum.driver.sql:make-sql-driver *provider* *conn*))
+           (migratum.driver.dbi:make-sql-driver *provider* *conn*))
 *DRIVER*
 ```
 
@@ -305,7 +305,7 @@ NIL
 The output of these functions will be the applied migrations in
 descending order by their id, first one being the most recent one.
 
-The `SQL` driver by default will fetch the last 100 applied
+The `dbi` driver by default will fetch the last 100 applied
 migrations. You can control this behaviour by using the `:offset` and
 `:limit` keyword parameters, which allows you to fetch applied
 migrations in pages.
@@ -420,7 +420,7 @@ CL-USER> (migratum:migration-load-down-script *migration*)
 
 ### Multiple Statements
 
-If you need to run multiple statements when using the `sql` driver you
+If you need to run multiple statements when using the `dbi` driver you
 can separate each statement in the migration using the `--;;`
 separator.
 
@@ -556,7 +556,7 @@ migrating and actually executing the upgrade and downgrade scripts.
 The driver also takes care of registering applied migrations after
 applying an upgrade script and also unregistering them during
 downgrade, thus it is the drivers' decision how to implement
-registering and unregistering. For example the `sql` builtin driver
+registering and unregistering. For example the `dbi` builtin driver
 registers applied migrations on the same database it is migrating, but
 a custom driver could choose a different stategy instead, e.g. use a
 key/value store, local files, or some remote endpoint instead.
@@ -583,7 +583,7 @@ The following methods can be overriden, if needed.
 | `MIGRATUM:DRIVER-INITIALIZED` | Returns `T` if driver is initialized, `NIL` otherwise      |
 | `MIGRATUM:DRIVER-SHUTDOWN`    | Shutdowns the driver and cleans up any allocated resources |
 
-You can check the [sql driver](./src/driver/sql.lisp) implementation
+You can check the [dbi driver](./src/driver/dbi.lisp) implementation
 for some example code.
 
 ## Tests
