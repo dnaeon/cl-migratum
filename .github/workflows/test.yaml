@@ -1,0 +1,32 @@
+# .github/workflows/test.yaml
+name: test
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      RUN_AS: 1001:121
+    # Service containers to run with `container-job`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub PostgreSQL image
+        image: postgres
+        # Provide the password for postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test
+        uses: docker://mcreations/sbcl:2.1.1-ql-2021-04-11
+        with:
+          args: --eval "(push \"/github/workspace/\" asdf:*central-registry*)" --eval "(ql:quickload :cl-migratum.test)" --eval "(setf rove:*enable-colors* nil)" --eval "(asdf:test-system :cl-migratum.test)" --eval "(sb-ext:exit :code (length (rove/core/stats:all-failed-assertions rove/core/stats:*stats*)))"
