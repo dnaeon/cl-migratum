@@ -1,2 +1,9 @@
 # Emacs backup files
 *~
+\#*
+.\#*
+
+# lisp junk
+*.FASL
+*.fasl
+*.lisp-temp
