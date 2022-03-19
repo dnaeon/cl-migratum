@@ -74,6 +74,7 @@ The following drivers are supported by `cl-migratum`.
 | Name  | Description                                                                                                        | System                   |
 |-------|--------------------------------------------------------------------------------------------------------------------|--------------------------|
 | `dbi` | Driver for performing schema migrations against a SQL database using [CL-DBI](https://github.com/fukamachi/cl-dbi) | `cl-migratum.driver.dbi` |
+| `rdbms-postgresql` | Driver for performing schema migrations against a SQL database using [hu.dwim.rdbms](http://dwim.hu/darcs/hu.dwim.rdbms/) | `cl-migratum.driver.rdbms-postgresql` |
 
 ## Usage
 
@@ -156,6 +157,8 @@ Once we have a provider for discovering migration resources we need to
 create a driver, which can be used to communicate with the database
 we want to apply migrations on.
 
+#### DBI Driver
+
 Here is how we can create a `dbi` driver. First, lets load the system,
 which provides that driver.
 
@@ -180,6 +183,24 @@ provider and connection.
 CL-USER> (defparameter *driver*
            (migratum.driver.dbi:make-driver *provider* *conn*))
 *DRIVER*
+```
+
+#### RDBMS PostgreSQL Driver
+
+The process to create an `rdbms-postgresql` driver is analogous.  The
+driver needs a connection specification to create a DB connection. In
+this example we use the same environment variables which are used by
+the PostgreSQL client `psql` to override the defaults:
+
+``` common-lisp
+(ql:quickload :cl-migratum.driver.rdbms-postgresql)
+(defparameter *driver*
+  (migratum.driver.rdbms-postgresql:make-driver
+   *provider*
+   `(:host ,(or (uiop:getenv "PGHOST") "localhost")
+     :database ,(or (uiop:getenv "PGDATABASE") "migratum")
+     :user-name ,(or (uiop:getenv "PGUSER") "migratum")
+     :password ,(or (uiop:getenv "PGPASSWORD") "tiger"))))
 ```
 
 ### Initialization
@@ -316,10 +337,10 @@ NIL
 The output of these functions will be the applied migrations in
 descending order by their id, first one being the most recent one.
 
-The `dbi` driver by default will fetch the last 100 applied
-migrations. You can control this behaviour by using the `:offset` and
-`:limit` keyword parameters, which allows you to fetch applied
-migrations in pages.
+The `dbi` and `rdbms-postgresql` drivers by default will fetch the
+last 100 applied migrations. You can control this behaviour by using
+the `:offset` and `:limit` keyword parameters, which allows you to
+fetch applied migrations in pages.
 
 For example, if you are interested only in the last ten applied
 migrations you can evaluate the following expression.
@@ -431,9 +452,9 @@ CL-USER> (migratum:migration-load-down-script *migration*)
 
 ### Multiple Statements
 
-If you need to run multiple statements when using the `dbi` driver you
-can separate each statement in the migration using the `--;;`
-separator.
+If you need to run multiple statements when using the `dbi` or
+`rdbms-postgresql` driver you can separate each statement in the
+migration using the `--;;` separator.
 
 The following example migration would create two tables as part of a
 single transaction.

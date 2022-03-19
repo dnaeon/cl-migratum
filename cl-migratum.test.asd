@@ -16,6 +16,7 @@
   :depends-on (:cl-migratum
                :cl-migratum.provider.local-path
                :cl-migratum.driver.dbi
+               :cl-migratum.driver.rdbms-postgresql
                :dbd-sqlite3
                :tmpdir
                :rove)
@@ -32,5 +33,8 @@
                (:module "tests"
                 :pathname #P"t/"
                 :depends-on ("test-migrations")
-                :components ((:file "test-suite"))))
+                :components ((:file "test-suite")
+                             (:file "local-path-provider")
+                             (:file "dbi-driver")
+                             (:file "rdbms-postgresql-driver"))))
   :perform (test-op (op c) (uiop:symbol-call :rove :run-suite :cl-migratum.test)))
