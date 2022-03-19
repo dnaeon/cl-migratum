@@ -5,7 +5,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      RUN_AS: 1001:121
+      WORKSPACE: /github/workspace/
+      QUICKLISP_DIST_VERSION: 2022-02-20
+      QUICKLISP_ADD_TO_INIT_FILE: true
     # Service containers to run with `container-job`
     services:
       # Label used to access the service container
@@ -14,8 +16,8 @@ jobs:
         image: postgres
         # Provide the password for postgres
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: migratum
+          POSTGRES_PASSWORD: FvbRd5qdeWHNum9p
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -27,6 +29,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Test
-        uses: docker://mcreations/sbcl:2.1.1-ql-2021-04-11
+        uses: docker://clfoundation/sbcl:2.2.1
         with:
-          args: --eval "(push \"/github/workspace/\" asdf:*central-registry*)" --eval "(ql:quickload :cl-migratum.test)" --eval "(setf rove:*enable-colors* nil)" --eval "(asdf:test-system :cl-migratum.test)" --eval "(sb-ext:exit :code (length (rove/core/stats:all-failed-assertions rove/core/stats:*stats*)))"
+          args: /github/workspace/bin/run-ci-tests.sh
