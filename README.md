@@ -89,11 +89,22 @@ system for the respective provider.
 CL-USER> (ql:quickload :cl-migratum.provider.local-path)
 ```
 
-Once you load the system we can create a `local-path` provider.
+Once you load the system we can create a `local-path` provider. The
+`local-path` provider can discover migrations from multiple paths.
+
+Typical example where having multiple paths with migration resources
+might be useful is when you have a set of base migrations you want to
+apply to all environments, and then have a separate path for each
+environment with their own migrations. For example you might want to
+run specific migrations only in your `dev` environment, but don't want
+them in your `production` environment.
+
+In that case it makes sense to separate the migration resources in
+multiple paths, for each environment respectively.
 
 ``` common-lisp
 CL-USER> (defparameter *provider*
-           (migratum.provider.local-path:make-local-path-provider #P"~/Projects/lisp/cl-migratum/t/migrations/"))
+           (migratum.provider.local-path:make-local-path-provider (list #P"~/Projects/lisp/cl-migratum/t/migrations/")))
 *PROVIDER*
 ```
 
