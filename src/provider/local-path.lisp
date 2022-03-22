@@ -92,7 +92,7 @@
 
 (defmethod initialize-instance :after ((provider local-path-provider) &key)
   (unless (listp (local-path-provider-paths provider))
-    (error "Must specify a list of migration paths")))
+    (error "Must specify a list of migration resource paths")))
 
 (defun make-local-path-provider (paths)
   "Creates a local path provider using the given path"
@@ -108,6 +108,8 @@
 
 (defun find-migration-files (path scanner)
   "Filters all files that match the given pattern scanner"
+  (unless (uiop:directory-exists-p path)
+    (error "path does not exist or is not a directory: ~a" path))
   (log:debug "Discovering migration files from ~a" path)
   (let ((files (uiop:directory-files path)))
     (remove-if-not (lambda (file)
