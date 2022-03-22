@@ -1,4 +1,4 @@
-;; Copyright (c) 2020 Marin Atanasov Nikolov <dnaeon@gmail.com>
+;; Copyright (c) 2020-2022 Marin Atanasov Nikolov <dnaeon@gmail.com>
 ;; All rights reserved.
 ;;
 ;; Redistribution and use in source and binary forms, with or without
@@ -90,7 +90,7 @@
         (cl-dbi:connect :sqlite3
                         :database-name (merge-pathnames (make-pathname :name "cl-migratum" :type "db")
                                                         *tmpdir*)))
-  (setf *provider* (make-local-path-provider *migrations-path*))
+  (setf *provider* (make-local-path-provider (list *migrations-path*)))
   (setf *driver*
         (make-driver *provider* *sqlite-conn*)))
 
