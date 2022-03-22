@@ -1,4 +1,4 @@
-;; Copyright (c) 2020 Marin Atanasov Nikolov <dnaeon@gmail.com>
+;; Copyright (c) 2020-2022 Marin Atanasov Nikolov <dnaeon@gmail.com>
 ;; All rights reserved.
 ;;
 ;; Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,7 @@
    :local-path-migration
    :local-path-migration-up-script-path
    :local-path-migration-down-script-path
-   :local-path-provider-path
+   :local-path-provider-paths
    :make-local-path-provider))
 (in-package :cl-migratum.provider.local-path)
 
@@ -83,18 +83,22 @@
     (uiop:read-file-string path)))
 
 (defclass local-path-provider (base-provider)
-  ((path
-    :initarg :path
-    :initform (error "Must specify path")
-    :accessor local-path-provider-path
-    :documentation "Local path from which to discover migrations"))
+  ((paths
+    :initarg :paths
+    :initform (error "Must specify migration resource paths")
+    :accessor local-path-provider-paths
+    :documentation "Local paths from which to discover migrations"))
   (:documentation "Provider for discovering migrations from a local path"))
 
-(defun make-local-path-provider (path)
+(defmethod initialize-instance :after ((provider local-path-provider) &key)
+  (unless (listp (local-path-provider-paths provider))
+    (error "Must specify a list of migration paths")))
+
+(defun make-local-path-provider (paths)
   "Creates a local path provider using the given path"
   (make-instance 'local-path-provider
                  :name "local-path"
-                 :path path
+                 :paths paths
                  :initialized t))
 
 (defun migration-file-p (path scanner)
@@ -104,6 +108,7 @@
 
 (defun find-migration-files (path scanner)
   "Filters all files that match the given pattern scanner"
+  (log:debug "Discovering migration files from ~a" path)
   (let ((files (uiop:directory-files path)))
     (remove-if-not (lambda (file)
                      (migration-file-p file scanner))
@@ -142,10 +147,10 @@ GROUP-MIGRATION-FILES-BY id function."
                               "_"))
 
 (defmethod provider-list-migrations ((provider local-path-provider) &key)
-  (log:debug "Discovering migration files from path ~a" (local-path-provider-path provider))
-  (let* ((path (local-path-provider-path provider))
+  (log:debug "Migration paths to be scanned: ~a" (local-path-provider-paths provider))
+  (let* ((paths (local-path-provider-paths provider))
          (scanner (cl-ppcre:create-scanner *migration-file-regex*))
-         (files (find-migration-files path scanner))
+         (files (mapcan (lambda (path) (find-migration-files path scanner)) paths))
          (groups (group-migration-files-by-id files scanner))
          (result nil))
     (maphash (lambda (k v)
@@ -163,8 +168,8 @@ GROUP-MIGRATION-FILES-BY id function."
     result))
 
 (defmethod provider-create-migration ((provider local-path-provider) &key id description up down)
-  (log:debug "Creating new migration in path ~a" (local-path-provider-path provider))
-  (let* ((provider-path (slot-value provider 'path))
+  (log:debug "Creating new migration in path ~a" (first (local-path-provider-paths provider)))
+  (let* ((provider-path (first (local-path-provider-paths provider)))
          (id (or id (make-migration-id)))
          (description (normalize-description (or description "new migration")))
          (up-content (or up ""))
