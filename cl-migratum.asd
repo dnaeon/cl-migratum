@@ -17,6 +17,7 @@
   :long-name "cl-migratum"
   :depends-on (:local-time
                :cl-ascii-table
+               :cl-reexport
                :log4cl)
   :components ((:module "util"
                 :pathname #P"src/"
