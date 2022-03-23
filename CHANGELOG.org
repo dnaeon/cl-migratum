@@ -1,0 +1,20 @@
+* 2022-03-23
+
+The =MIGRATUM.PROVIDER.LOCAL-PATH= provider accepts a list of
+migration resource paths.
+
+- =CL-MIGRATUM= system version bumped to v0.5.0
+- =CL-MIGRATUM.PROVIDER.LOCAL-PATH= system version bumped to v0.3.0
+
+** Breaking Changes
+
+The =MIGRATUM.PROVIDER.LOCAL-PATH= provider no longer accepts a
+single migration resources path, but instead it expects a list of
+paths.
+
+The =:path= initarg has been renamed to =:paths= to reflect that
+change.
+
+The =MIGRATUM:PROVIDER-CREATE-MIGRATION= method specializing on
+=MIGRATUM.PROVIDER.LOCAL-PATH= will create new migration resources in
+the first specified migration resource path.
