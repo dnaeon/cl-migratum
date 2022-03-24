@@ -52,4 +52,5 @@
                 :serial t
                 :components ((:file "package")
                              (:file "generics")
-                             (:file "lp-provider")))))
+                             (:file "lp-provider")
+                             (:file "dbi-driver")))))
