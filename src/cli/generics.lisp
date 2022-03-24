@@ -23,32 +23,13 @@
 ;; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 ;; THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-(defpackage :cl-migratum-cli-system
-  (:use :cl :asdf))
-(in-package :cl-migratum-cli-system)
+(in-package :cl-migratum.cli)
 
-(defsystem "cl-migratum.cli"
-  :name "cl-migratum.cli"
-  :long-name "cl-migratum.cli"
-  :description "CLI built on top of the cl-migratum system"
-  :version "0.1.0"
-  :author "Marin Atanasov Nikolov <dnaeon@gmail.com>"
-  :maintainer "Marin Atanasov Nikolov <dnaeon@gmail.com>"
-  :license "BSD 2-Clause"
-  :long-description #.(uiop:read-file-string
-                       (uiop:subpathname *load-pathname* "README.md"))
-  :homepage "https://github.com/dnaeon/cl-migratum"
-  :bug-tracker "https://github.com/dnaeon/cl-migratum"
-  :source-control "https://github.com/dnaeon/cl-migratum"
-  :depends-on (:cl-migratum
-               :cl-migratum.driver.dbi
-               :cl-migratum.provider.local-path
-               :clingon)
-  :build-operation "program-op"
-  :build-pathname "bin/migratum"
-  :entry-point "cl-migratum.cli:main"
-  :components ((:module "cli"
-                :pathname #P"src/cli/"
-                :serial t
-                :components ((:file "package")
-                             (:file "generics")))))
+(defgeneric get-provider (kind command)
+  (:documentation "Given the context of COMMAND creates a new provider of the given KIND"))
+
+(defgeneric get-driver (kind command)
+  (:documentation "Given the context of COMMAND creates a new driver of the given KIND"))
+
+(defgeneric get-db-connection (kind command)
+  (:documentation "Given the context of COMMAND creates a new database connection of the given KIND"))
