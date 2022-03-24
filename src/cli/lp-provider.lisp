@@ -29,4 +29,6 @@
   (let ((resources (clingon:getopt command :provider.local-path/resources)))
     (unless resources
       (error "No migration resource paths specified"))
-    (cl-migratum.provider.local-path:make-provider resources)))
+    (let ((provider (cl-migratum.provider.local-path:make-provider resources)))
+      (cl-migratum:provider-init provider)
+      provider)))
