@@ -53,4 +53,5 @@
                 :components ((:file "package")
                              (:file "generics")
                              (:file "lp-provider")
-                             (:file "dbi-driver")))))
+                             (:file "dbi-driver")
+                             (:file "main")))))
