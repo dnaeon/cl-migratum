@@ -32,8 +32,7 @@
    :base-migration
    :migration-id
    :migration-description
-   :migration-load-up-script
-   :migration-load-down-script
+   :migration-load
    :base-driver
    :driver-name
    :driver-provider
@@ -44,7 +43,8 @@
    :driver-apply-up-migration
    :driver-apply-down-migration
    :driver-register-migration
-   :driver-unregister-migration)
+   :driver-unregister-migration
+   :provider-package)
   (:import-from :log)
   (:import-from :hu.dwim.logger
    :+warn+
@@ -134,11 +134,11 @@ CREATE TABLE IF NOT EXISTS migration (
 
 (defmethod driver-apply-up-migration ((driver rdbms-postgresql-driver) (migration base-migration) &key)
   (log:debug "Applying upgrade migration: ~a - ~a" (migration-id migration) (migration-description migration))
-  (rdbms-postgresql-driver-apply-migration driver migration #'migration-load-up-script))
+  (rdbms-postgresql-driver-apply-migration driver migration :up))
 
 (defmethod driver-apply-down-migration ((driver rdbms-postgresql-driver) (migration base-migration) &key)
   (log:debug "Applying downgrade migration: ~a - ~a" (migration-id migration) (migration-description migration))
-  (rdbms-postgresql-driver-apply-migration driver migration #'migration-load-down-script))
+  (rdbms-postgresql-driver-apply-migration driver migration :down))
 
 (defun make-driver (provider connection-specification)
   "Creates a driver for performing migrations against a SQL database
@@ -160,13 +160,29 @@ Arguments:
 ;; (cl-migratum.core:apply-pending *tstdrv*)
 ;; (cl-migratum.core:display-applied *tstdrv*)
 
-(defun rdbms-postgresql-driver-apply-migration (driver migration migration-script-loader-fun)
+(defun rdbms-postgresql-driver-apply-migration (driver migration direction)
   "Applies the script loaded using the migration script loader function"
   (let* ((db (database-of driver))
-         (content (funcall migration-script-loader-fun migration))
-         (statements (cl-ppcre:split *sql-statement-separator* content)))
-    (hu.dwim.rdbms:with-database db
+         (package (or (provider-package (driver-provider driver)) :cl-user))
+         (content (migration-load migration direction package)))
+    (if (stringp content)
+        (apply-sql-migration content db)
+        (apply-functional-migration content db))))
+
+(defun apply-sql-migration (content database)
+  (assert (stringp content))
+  ;; TODO: splitting of statements feels a bit misplaced here. Maybe
+  ;; it should be done in local-path:migration-load which can return a
+  ;; list of strings or functions
+  (let ((statements (cl-ppcre:split *sql-statement-separator* content)))
+    (hu.dwim.rdbms:with-database database
       (hu.dwim.rdbms:with-transaction
         (dolist (statement statements)
           (let ((stmt (string-trim #(#\Newline) statement)))
             (hu.dwim.rdbms:execute stmt)))))))
+
+(defun apply-functional-migration (func database)
+  (assert (functionp func))
+  (hu.dwim.rdbms:with-database database
+      (hu.dwim.rdbms:with-transaction
+        (funcall func database))))

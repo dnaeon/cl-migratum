@@ -33,8 +33,16 @@ important that you get familiar with them first.
 
 A `migration` represents a resource that provides information about a
 schema change, e.g. it provides the unique id of the change, the
-required scripts that can be used to upgrade and/or downgrade the
+required scripts or functions that can be used to upgrade and/or downgrade the
 database.
+
+Two different types of `migration` exist:
+- SQL script migrations
+- functional migrations
+
+SQL script migrations consist of one or multiple SQL statements, and
+functional migrations are defined by the name of a function, which has
+to exist in a CL package.
 
 Migration resources are discovered via `providers` and are being
 used by `drivers` during the process of upgrade/downgrade of the
@@ -113,8 +121,13 @@ The `LOCAL-PATH-PROVIDER` discovers migration files which match the following pa
 
 | Pattern                       | Description      |
 |-------------------------------|------------------|
-| `<id>-<description>.up.sql`   | Upgrade script   |
-| `<id>-<description>.down.sql` | Downgrade script |
+| `<id>-<description>.up.sql`   | Upgrade SQL script, consisting of one or multiple SQL statements |
+| `<id>-<description>.down.sql` | Downgrade SQL script, consisting of one or multiple SQL statements |
+| `<id>-<description>.up.sexp`   | Upgrade function specification, a property list with key `:function` followed by a function name  |
+| `<id>-<description>.down.sexp` | Downgrade function specification, a property list with key `:function` followed by a function name  |
+
+In case of functional migration files, a size limit of 1000 characters
+exists.
 
 A provider can optionally be initialized, which can be done using the
 `MIGRATUM:PROVIDER-INIT` generic function. Not all providers would

@@ -36,13 +36,13 @@
    :migration-id
    :migration-description
    :migration-applied
-   :migration-load-up-script
-   :migration-load-down-script
+   :migration-load
    :base-provider
    :provider-init
    :provider-shutdown
    :provider-initialized
    :provider-name
+   :provider-package
    :provider-list-migrations
    :provider-create-migration
    :provider-find-migration-by-id
@@ -87,11 +87,11 @@
     :documentation "Timestamp when the migration was applied"))
   (:documentation "Base class for migration resources"))
 
-(defgeneric migration-load-up-script (migration &key)
-  (:documentation "Returns the contents of the upgrade migration script"))
-
-(defgeneric migration-load-down-script (migration &key)
-  (:documentation "Returns the contents of the downgrade migration script"))
+(defgeneric migration-load (migration direction package &key)
+  (:documentation
+   "Returns either the contents of the migration script as a string or a
+function which will be called. Argument direction must be :up or :down, package
+is the package where functional migrations are found."))
 
 (defclass base-provider ()
   ((name
@@ -104,7 +104,12 @@
     :initarg :initialized
     :initform nil
     :accessor provider-initialized
-    :documentation "Returns T if provider is initialized, NIL otherwise"))
+    :documentation "Returns T if provider is initialized, NIL otherwise")
+   (package
+    :initarg :package
+    :initform (find-package :keyword)
+    :accessor provider-package
+    :documentation "The package which contains migration functions"))
   (:documentation "Base class for migration providers"))
 
 (defgeneric provider-init (provider &key)

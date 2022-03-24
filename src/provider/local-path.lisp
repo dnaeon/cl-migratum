@@ -35,8 +35,8 @@
    :base-provider
    :base-migration
    :migration-id
-   :migration-load-up-script
-   :migration-load-down-script
+   :migration-load
+   :provider-package
    :provider-list-migrations
    :provider-create-migration
    :make-migration-id)
@@ -54,7 +54,7 @@
 (in-package :cl-migratum.provider.local-path)
 
 (defparameter *migration-file-regex*
-  "(\\d{14})-(.*)\.(up|down)\.sql$"
+  "(\\d{14})-(.*)\.(up|down)\.(sql|sexp)$"
   "Regex used to match migration files")
 
 (defclass local-path-migration (base-migration)
@@ -63,24 +63,49 @@
     :initform (error "Must specify up script path")
     :accessor local-path-migration-up-script-path
     :documentation "Path to the upgrade SQL script")
+   (up-script-type
+    :initarg :up-script-type
+    :initform (error "Must specify up script type (one of :sql or :sexp)")
+    :accessor local-path-migration-up-script-type
+    :documentation "The type of the upgrade script (SQL or a function specification)")
    (down-script-path
     :initarg :down-script-path
     :initform (error "Must specify down script path")
     :accessor local-path-migration-down-script-path
-    :documentation "Path to the downgrade SQL script"))
+    :documentation "Path to the downgrade SQL script")
+   (down-script-type
+    :initarg :down-script-type
+    :initform (error "Must specify down script type (one of :sql or :sexp)")
+    :accessor local-path-migration-down-script-type
+    :documentation "The type of the downgrade script (SQL or a function specification s-expression)"))
   (:documentation "Migration resource discovered from a local path"))
 
-(defmethod migration-load-up-script ((migration local-path-migration) &key)
+(defmethod migration-load ((migration local-path-migration) (direction (eql :up)) package &key)
   (let ((id (migration-id migration))
-        (path (local-path-migration-up-script-path migration)))
+        (path (local-path-migration-up-script-path migration))
+        (type (local-path-migration-up-script-type migration)))
     (log:debug "Loading upgrade migration for id ~a from ~a" id path)
-    (uiop:read-file-string path)))
+    (load-sql-or-function path type package)))
 
-(defmethod migration-load-down-script ((migration local-path-migration) &key)
+(defmethod migration-load ((migration local-path-migration) (direction (eql :down)) package &key)
   (let ((id (migration-id migration))
-        (path (local-path-migration-down-script-path migration)))
-    (log:debug "Loading downgrade migration for id ~a from ~a" id path)
-    (uiop:read-file-string path)))
+        (path (local-path-migration-down-script-path migration))
+        (type (local-path-migration-down-script-type migration)))
+    (log:debug "Loading downgrade migration for id ~a with type ~a from ~a" id type path)
+    (load-sql-or-function path type package)))
+
+(defun load-sql-or-function (path type package)
+  (let ((content (uiop:read-file-string path)))
+    (ecase type
+      (:sql content)
+      (:sexp (let ((*read-eval* nil)
+                   (*package* (find-package package)))
+               (assert (> 1000 (length content)) nil "Functional migration file '~A' exceeds the maximum size of 1000" path)
+               (let* ((fn-symbol (getf (read (make-string-input-stream content)) :function))
+                      (fn-package (symbol-package fn-symbol)))
+                 (when fn-package
+                   (assert (eq *package* fn-package) nil "The function ~A is in package ~A and not in the configured package of the provider: ~A" fn-symbol fn-package *package*))
+                 (symbol-function fn-symbol)))))))
 
 (defclass local-path-provider (base-provider)
   ((paths
@@ -88,17 +113,18 @@
     :initform (error "Must specify migration resource paths")
     :accessor local-path-provider-paths
     :documentation "Local paths from which to discover migrations"))
-  (:documentation "Provider for discovering migrations from a local path"))
+  (:documentation "Provider for discovering migrations from a list of local paths"))
 
 (defmethod initialize-instance :after ((provider local-path-provider) &key)
   (unless (listp (local-path-provider-paths provider))
     (error "Must specify a list of migration resource paths")))
 
-(defun make-local-path-provider (paths)
+(defun make-local-path-provider (paths &optional (package :cl-user))
   "Creates a local path provider using the given path"
   (make-instance 'local-path-provider
                  :name "local-path"
                  :paths paths
+                 :package package
                  :initialized t))
 
 (defun migration-file-p (path scanner)
@@ -119,12 +145,12 @@
 (defun group-migration-files-by-id (files scanner)
   "Groups migration files by id. Each group consists of the upgrade and downgrade scripts."
   (reduce (lambda (acc file)
-            (cl-ppcre:register-groups-bind (id description operation)
+            (cl-ppcre:register-groups-bind (id description operation type)
                 (scanner (namestring file))
               (let* ((id (parse-integer id))
                     (group (gethash id acc nil)))
                 (setf (gethash id acc)
-                      (push (list :id id :operation operation :description description :path file)
+                      (push (list :id id :operation operation :description description :path file :type type)
                             group))))
             acc)
           files
@@ -164,13 +190,16 @@ GROUP-MIGRATION-FILES-BY id function."
                                       :description (getf up-migration :description)
                                       :applied nil
                                       :up-script-path (getf up-migration :path)
-                                      :down-script-path (getf down-migration :path))
+                                      :up-script-type (intern (string-upcase (getf up-migration :type)) :keyword)
+                                      :down-script-path (getf down-migration :path)
+                                      :down-script-type (intern (string-upcase (getf down-migration :type)) :keyword))
                        result)))
              groups)
     result))
 
-(defmethod provider-create-migration ((provider local-path-provider) &key id description up down)
+(defmethod provider-create-migration ((provider local-path-provider) &key id description up down (type :sql))
   (log:debug "Creating new migration in path ~a" (first (local-path-provider-paths provider)))
+  (assert (member type '(:sql :sexp)) nil "Migration type must be either :sql or :sexp, but was ~A" type)
   (let* ((provider-path (first (local-path-provider-paths provider)))
          (id (or id (make-migration-id)))
          (description (normalize-description (or description "new migration")))
@@ -178,17 +207,31 @@ GROUP-MIGRATION-FILES-BY id function."
          (down-content (or down ""))
          (up-file-name (format nil "~a-~a.up" id description))
          (down-file-name (format nil "~a-~a.down" id description))
-         (up-file-path (make-pathname :name up-file-name :type "sql" :directory (pathname-directory (truename provider-path))))
-         (down-file-path (make-pathname :name down-file-name :type "sql" :directory (pathname-directory (truename provider-path)))))
-    (log:debug "Creating UP migration file ~a" up-file-path)
-    (with-open-file (out up-file-path :direction :output :if-does-not-exist :create)
-      (write-string up-content out))
-    (log:debug "Creating DOWN migration file ~a" down-file-path)
-    (with-open-file (out down-file-path :direction :output :if-does-not-exist :create)
-      (write-string down-content out))
-    (make-instance 'local-path-migration
-                   :id id
-                   :description description
-                   :applied nil
-                   :up-script-path up-file-path
-                   :down-script-path down-file-path)))
+         (type-name (string-downcase (symbol-name type)))
+         (up-file-path (make-pathname :name up-file-name :type type-name :directory (pathname-directory (truename provider-path))))
+         (down-file-path (make-pathname :name down-file-name :type type-name :directory (pathname-directory (truename provider-path))))
+         migration)
+    (handler-case
+        (progn
+          (log:debug "Creating UP migration file ~a" up-file-path)
+          (with-open-file (out up-file-path :direction :output :if-does-not-exist :create)
+            (write-string up-content out))
+          (log:debug "Creating DOWN migration file ~a" down-file-path)
+          (with-open-file (out down-file-path :direction :output :if-does-not-exist :create)
+            (write-string down-content out))
+          (setf migration (make-instance 'local-path-migration
+                                        :id id
+                                        :description description
+                                        :applied nil
+                                        :up-script-path up-file-path
+                                        :up-script-type type
+                                        :down-script-path down-file-path
+                                        :down-script-type type))
+          ;; verify that the content can be loaded
+          (migration-load migration :up (provider-package provider))
+          (migration-load migration :down (provider-package provider))
+          migration)
+      (error (e) (progn
+                   (uiop:delete-file-if-exists up-file-path)
+                   (uiop:delete-file-if-exists down-file-path)
+                   (signal e))))))

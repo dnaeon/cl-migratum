@@ -32,8 +32,7 @@
    :base-migration
    :migration-id
    :migration-description
-   :migration-load-up-script
-   :migration-load-down-script
+   :migration-load
    :base-driver
    :driver-name
    :driver-provider
@@ -44,7 +43,8 @@
    :driver-apply-up-migration
    :driver-apply-down-migration
    :driver-register-migration
-   :driver-unregister-migration)
+   :driver-unregister-migration
+   :provider-package)
   (:import-from :log)
   (:import-from :cl-dbi)
   (:import-from :cl-ppcre)
@@ -54,7 +54,7 @@
 (in-package :cl-migratum.driver.dbi)
 
 (defparameter *sql-statement-separator*
-  "--;;"
+  "(--;;|;;)"
   "Separator to use when splitting a migration into multiple statements")
 
 (defparameter *sql-init-schema*
@@ -120,11 +120,11 @@ CREATE TABLE IF NOT EXISTS migration (
 
 (defmethod driver-apply-up-migration ((driver dbi-driver) (migration base-migration) &key)
   (log:debug "Applying upgrade migration: ~a - ~a" (migration-id migration) (migration-description migration))
-  (dbi-driver-apply-migration driver migration #'migration-load-up-script))
+  (dbi-driver-apply-migration driver migration :up))
 
 (defmethod driver-apply-down-migration ((driver dbi-driver) (migration base-migration) &key)
   (log:debug "Applying downgrade migration: ~a - ~a" (migration-id migration) (migration-description migration))
-  (dbi-driver-apply-migration driver migration #'migration-load-down-script))
+  (dbi-driver-apply-migration driver migration :down))
 
 (defun make-driver (provider connection)
   "Creates a driver for performing migrations against a SQL database"
@@ -133,12 +133,27 @@ CREATE TABLE IF NOT EXISTS migration (
                  :provider provider
                  :connection connection))
 
-(defun dbi-driver-apply-migration (driver migration migration-script-loader-fun)
+(defun dbi-driver-apply-migration (driver migration direction)
   "Applies the script loaded using the migration script loader function"
   (let* ((connection (dbi-driver-connection driver))
-         (content (funcall migration-script-loader-fun migration))
-         (statements (cl-ppcre:split *sql-statement-separator* content)))
+         (package (or (provider-package (driver-provider driver)) :keyword))
+         (content (migration-load migration direction package)))
+    (if (stringp content)
+        (apply-sql-migration content connection)
+        (apply-functional-migration content connection))))
+
+(defun apply-sql-migration (content connection)
+  (assert (stringp content))
+  ;; TODO: splitting of statements feels a bit misplaced here. Maybe
+  ;; it should be done in local-path:migration-load which can return a
+  ;; list of strings or functions
+  (let ((statements (cl-ppcre:split *sql-statement-separator* content)))
     (cl-dbi:with-transaction connection
       (dolist (statement statements)
         (let ((stmt (cl-dbi:prepare connection (string-trim #(#\Newline) statement))))
           (cl-dbi:execute stmt))))))
+
+(defun apply-functional-migration (func connection)
+  (assert (functionp func))
+  (cl-dbi:with-transaction connection
+    (funcall func connection)))

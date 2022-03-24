@@ -1,0 +1,1 @@
+(:function drop-table-baz)

@@ -44,16 +44,16 @@
 
   (testing "list-pending"
     (let ((pending (list-pending *dbi-driver*)))
-      (ok (= 4 (length pending)) "number of pending migrations matches")
-      (ok (equal (list 20200421173657 20200421173908 20200421180337 20200605144633)
+      (ok (= 5 (length pending)) "number of pending migrations matches")
+      (ok (equal (list 20200421173657 20200421173908 20200421180000 20200421180337 20200605144633)
                  (mapcar #'migration-id pending))
           "identifiers of pending migrations matches")))
 
   (testing "apply-pending"
     (apply-pending *dbi-driver*)
     (let ((applied (driver-list-applied *dbi-driver*)))
-      (ok (= 4 (length applied)) "number of applied migrations matches")
-      (ok (equal (list 20200605144633 20200421180337 20200421173908 20200421173657)
+      (ok (= 5 (length applied)) "number of applied migrations matches")
+      (ok (equal (list 20200605144633 20200421180337 20200421180000 20200421173908 20200421173657)
                  (mapcar #'migration-id applied))
           "identifiers of applied migrations matches")))
 
@@ -72,7 +72,7 @@
         "latest migration id matches"))
 
   (testing "revert-last"
-    (revert-last *dbi-driver* :count 4)
+    (revert-last *dbi-driver* :count 5)
     (ng (contains-applied-migrations-p *dbi-driver*)
         "no migrations present after revert")
     (ng (driver-list-applied *dbi-driver*)
@@ -88,6 +88,9 @@
     (ok (= 20200421173908 (migration-id (latest-migration *dbi-driver*)))
         "id matches next applied migration")
     (apply-next *dbi-driver*)
+    (ok (= 20200421180000 (migration-id (latest-migration *dbi-driver*)))
+        "id matches next applied migration")
+    (apply-next *dbi-driver*)
     (ok (= 20200421180337 (migration-id (latest-migration *dbi-driver*)))
         "id matches next applied migration")
     (apply-next *dbi-driver*)
@@ -95,4 +98,11 @@
         "id matches next applied migration")
     (apply-next *dbi-driver*) ;; No more pending migrations at this point
     (ok (= 20200605144633 (migration-id (latest-migration *dbi-driver*)))
-        "id of last migration is the same"))) ;; ID did not change, since previous migration
+        "id of last migration is the same"))
+
+  (testing "helper-functions"
+    (let ((conn (migratum.driver.dbi::dbi-driver-connection  *dbi-driver*)))
+      (ok (signals (migratum.driver.dbi::apply-sql-migration #'create-table-baz conn))
+          "calling apply-sql-migration with a function instead of a string signals an error")
+      (ok (signals (migratum.driver.dbi::apply-functional-migration "drop table baz" conn))
+          "calling apply-functional-migration with a string instead of a function signals an error"))))

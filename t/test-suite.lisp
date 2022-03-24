@@ -41,8 +41,7 @@
    :provider-find-migration-by-id
    :migration-id
    :migration-description
-   :migration-load-up-script
-   :migration-load-down-script
+   :migration-load
    :driver-name
    :driver-init
    :driver-shutdown
@@ -58,7 +57,9 @@
    :migratum.provider.local-path
    :make-local-path-provider
    :local-path-migration-up-script-path
-   :local-path-migration-down-script-path)
+   :local-path-migration-down-script-path
+   :local-path-migration-up-script-type
+   :local-path-migration-down-script-type)
   (:import-from :migratum.driver.dbi)
   (:import-from :migratum.driver.rdbms-postgresql))
 (in-package :cl-migratum.test)
@@ -93,7 +94,7 @@
         (cl-dbi:connect :sqlite3
                         :database-name (merge-pathnames (make-pathname :name "cl-migratum" :type "db")
                                                         *tmpdir*)))
-  (setf *provider* (make-local-path-provider (list *migrations-path*)))
+  (setf *provider* (make-local-path-provider (list *migrations-path*) :cl-migratum.test))
   (setf *dbi-driver*
         (migratum.driver.dbi:make-driver *provider* *sqlite-conn*))
   (setf *rdbms-postgresql-driver*
@@ -108,3 +109,24 @@
   (driver-shutdown *dbi-driver*)
   (when *tmpdir*
     (uiop:delete-directory-tree *tmpdir* :validate t)))
+
+(defun create-table-baz (connection-or-database)
+  (log:info "Migration function create-table-baz was called with a ~A" connection-or-database)
+  (execute-query "create table baz ( col1 varchar(100), col2 bigint)" connection-or-database))
+
+(defun drop-table-baz (connection-or-database)
+  (log:info "Migration function drop-table-baz was called with a ~A" connection-or-database)
+  (execute-query "drop table baz" connection-or-database))
+
+(defun create-table-corge (connection-or-database)
+  (log:info "Migration function create-table-baz was called with a ~A" connection-or-database)
+  (execute-query "create table corge ( col1 varchar(100), col2 bigint)" connection-or-database))
+
+(defun drop-table-corge (connection-or-database)
+  (log:info "Migration function drop-table-baz was called with a ~A" connection-or-database)
+  (execute-query "drop table corge" connection-or-database))
+
+(defun execute-query (query connection-or-database)
+  (etypecase connection-or-database
+    (dbi.driver:dbi-connection (cl-dbi:execute (cl-dbi:prepare connection-or-database query)))
+    (hu.dwim.rdbms:database (hu.dwim.rdbms:execute query))))

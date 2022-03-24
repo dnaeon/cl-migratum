@@ -44,16 +44,16 @@
 
   (testing "list-pending"
     (let ((pending (list-pending *rdbms-postgresql-driver*)))
-      (ok (= 4 (length pending)) "number of pending migrations matches")
-      (ok (equal (list 20200421173657 20200421173908 20200421180337 20200605144633)
+      (ok (= 5 (length pending)) "number of pending migrations matches")
+      (ok (equal (list 20200421173657 20200421173908 20200421180000 20200421180337 20200605144633)
                  (mapcar #'migration-id pending))
           "identifiers of pending migrations matches")))
 
   (testing "apply-pending"
     (apply-pending *rdbms-postgresql-driver*)
     (let ((applied (driver-list-applied *rdbms-postgresql-driver*)))
-      (ok (= 4 (length applied)) "number of applied migrations matches")
-      (ok (equal (list 20200605144633 20200421180337 20200421173908 20200421173657)
+      (ok (= 5 (length applied)) "number of applied migrations matches")
+      (ok (equal (list 20200605144633 20200421180337 20200421180000 20200421173908 20200421173657)
                  (mapcar #'migration-id applied))
           "identifiers of applied migrations matches")))
 
@@ -72,7 +72,7 @@
         "latest migration id matches"))
 
   (testing "revert-last"
-    (revert-last *rdbms-postgresql-driver* :count 4)
+    (revert-last *rdbms-postgresql-driver* :count 5)
     (ng (contains-applied-migrations-p *rdbms-postgresql-driver*)
         "no migrations present after revert")
     (ng (driver-list-applied *rdbms-postgresql-driver*)
@@ -88,6 +88,9 @@
     (ok (= 20200421173908 (migration-id (latest-migration *rdbms-postgresql-driver*)))
         "id matches next applied migration")
     (apply-next *rdbms-postgresql-driver*)
+    (ok (= 20200421180000 (migration-id (latest-migration *rdbms-postgresql-driver*)))
+        "id matches next applied migration")
+    (apply-next *rdbms-postgresql-driver*)
     (ok (= 20200421180337 (migration-id (latest-migration *rdbms-postgresql-driver*)))
         "id matches next applied migration")
     (apply-next *rdbms-postgresql-driver*)
@@ -95,4 +98,11 @@
         "id matches next applied migration")
     (apply-next *rdbms-postgresql-driver*) ;; No more pending migrations at this point
     (ok (= 20200605144633 (migration-id (latest-migration *rdbms-postgresql-driver*)))
-        "id of last migration is the same"))) ;; ID did not change, since previous migration
+        "id of last migration is the same"))
+
+  (testing "helper-functions"
+    (let ((db (migratum.driver.rdbms-postgresql::database-of *rdbms-postgresql-driver*)))
+      (ok (signals (migratum.driver.rdbms-postgresql::apply-sql-migration #'create-table-baz db))
+          "calling apply-sql-migration with a function instead of a string signals an error")
+      (ok (signals (migratum.driver.rdbms-postgresql::apply-functional-migration "drop table baz" db))
+          "calling apply-functional-migration with a string instead of a function signals an error"))))
