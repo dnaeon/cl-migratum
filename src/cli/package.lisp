@@ -32,6 +32,7 @@
   (:import-from :cl-migratum.driver.dbi)
   (:import-from :cl-migratum.provider.local-path)
   (:import-from :cl-dbi)
+  (:import-from :log)
   (:export
    :main))
 (in-package :cl-migratum.cli)
