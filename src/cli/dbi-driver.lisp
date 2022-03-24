@@ -27,13 +27,18 @@
 
 (defmethod get-driver ((kind (eql :dbi)) (command clingon:command))
   (let ((provider (get-provider (clingon:getopt command :provider/kind) command))
-        (conn (get-db-connection (clingon:getopt command :driver.dbi/db-kind) command)))
-    (cl-migratum.driver.dbi:make-driver provider conn)))
+        (db-kind (clingon:getopt command :driver.dbi/db-kind)))
+    (unless db-kind
+      (error "DBI: No database kind specified"))
+    (let* ((conn (get-db-connection db-kind command))
+           (driver (cl-migratum.driver.dbi:make-driver provider conn)))
+      (cl-migratum:driver-init driver)
+      driver)))
 
 (defmethod get-db-connection ((kind (eql :dbi/sqlite3)) (command clingon:command))
   (let ((db-name (clingon:getopt command :driver.dbi/db-name)))
     (unless db-name
-      (error "No database name specified"))
+      (error "DBI: No database name specified"))
     (cl-dbi:connect :sqlite3 :database-name db-name)))
 
 (defmethod get-db-connection ((kind (eql :dbi/postgres)) (command clingon:command))
@@ -43,9 +48,9 @@
         (db-pass (clingon:getopt command :driver.dbi/db-pass))
         (db-port (clingon:getopt command :driver.dbi/db-port 5432)))
     (unless db-name
-      (error "No database name specified"))
+      (error "DBI: No database name specified"))
     (unless db-user
-      (error "No database username specified"))
+      (error "DBI: No database username specified"))
     (cl-dbi:connect :postgres
                     :database-name db-name
                     :username db-user
@@ -60,9 +65,9 @@
         (db-pass (clingon:getopt command :driver.dbi/db-pass))
         (db-port (clingon:getopt command :driver.dbi/db-port 3306)))
     (unless db-name
-      (error "No database name specified"))
+      (error "DBI: No database name specified"))
     (unless db-user
-      (error "No database username specified"))
+      (error "DBI: No database username specified"))
     (cl-dbi:connect :mysql
                     :database-name db-name
                     :username db-user
