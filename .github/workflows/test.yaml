@@ -1,11 +1,17 @@
 # .github/workflows/test.yaml
 name: test
-on: push
+on: [ push, pull_request ]
 jobs:
   test:
     runs-on: ubuntu-latest
     env:
       WORKSPACE: /github/workspace/
+      # the env vars for the PostgreSQL connection must be in sync
+      # with the 'postgres' service below
+      PGHOST: postgres
+      PGDATABASE: migratum
+      PGUSER: migratum
+      PGPASSWORD: FvbRd5qdeWHNum9p
       QUICKLISP_DIST_VERSION: 2022-02-20
       QUICKLISP_ADD_TO_INIT_FILE: true
     # Service containers to run with `container-job`

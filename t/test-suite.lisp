@@ -91,8 +91,14 @@
                         :database-name (merge-pathnames (make-pathname :name "cl-migratum" :type "db")
                                                         *tmpdir*)))
   (setf *provider* (make-local-path-provider (list *migrations-path*)))
-  (setf *driver*
-        (make-driver *provider* *sqlite-conn*)))
+  (setf *dbi-driver*
+        (migratum.driver.dbi:make-driver *provider* *sqlite-conn*))
+  (setf *rdbms-postgresql-driver*
+        (migratum.driver.rdbms-postgresql:make-driver *provider*
+                                                      `(:host ,(or (uiop:getenv "PGHOST") "localhost")
+                                                        :database ,(or (uiop:getenv "PGDATABASE") "migratum")
+                                                        :user-name ,(or (uiop:getenv "PGUSER") "migratum")
+                                                        :password ,(or (uiop:getenv "PGPASSWORD") "FvbRd5qdeWHNum9p")))))
 
 (teardown
   (provider-shutdown *provider*)
