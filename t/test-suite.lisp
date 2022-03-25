@@ -41,8 +41,7 @@
    :provider-find-migration-by-id
    :migration-id
    :migration-description
-   :migration-load-up-script
-   :migration-load-down-script
+   :migration-load
    :driver-name
    :driver-init
    :driver-shutdown

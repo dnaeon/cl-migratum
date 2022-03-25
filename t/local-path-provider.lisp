@@ -65,10 +65,10 @@
       (ok (string= "my_new_migration" (migration-description migration))
           "migration description matches")
       (ok (string= "CREATE TABLE cl_migratum_test (id INTEGER PRIMARY KEY);"
-                   (migration-load-up-script migration))
+                   (migration-load :up migration))
           "upgrade script matches")
       (ok (string= "DROP TABLE cl_migratum_test;"
-                   (migration-load-down-script migration))
+                   (migration-load :down migration))
           "downgrade script matches")
       (uiop:delete-file-if-exists (local-path-migration-up-script-path migration))
       (uiop:delete-file-if-exists (local-path-migration-down-script-path migration)))))

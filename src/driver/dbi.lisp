@@ -32,8 +32,7 @@
    :base-migration
    :migration-id
    :migration-description
-   :migration-load-up-script
-   :migration-load-down-script
+   :migration-load
    :base-driver
    :driver-name
    :driver-provider
@@ -120,11 +119,11 @@ CREATE TABLE IF NOT EXISTS migration (
 
 (defmethod driver-apply-up-migration ((driver dbi-driver) (migration base-migration) &key)
   (log:debug "Applying upgrade migration: ~a - ~a" (migration-id migration) (migration-description migration))
-  (dbi-driver-apply-migration driver migration #'migration-load-up-script))
+  (dbi-driver-apply-migration :up driver migration))
 
 (defmethod driver-apply-down-migration ((driver dbi-driver) (migration base-migration) &key)
   (log:debug "Applying downgrade migration: ~a - ~a" (migration-id migration) (migration-description migration))
-  (dbi-driver-apply-migration driver migration #'migration-load-down-script))
+  (dbi-driver-apply-migration :down driver migration))
 
 (defun make-driver (provider connection)
   "Creates a driver for performing migrations against a SQL database"
@@ -133,10 +132,10 @@ CREATE TABLE IF NOT EXISTS migration (
                  :provider provider
                  :connection connection))
 
-(defun dbi-driver-apply-migration (driver migration migration-script-loader-fun)
+(defun dbi-driver-apply-migration (direction driver migration)
   "Applies the script loaded using the migration script loader function"
   (let* ((connection (dbi-driver-connection driver))
-         (content (funcall migration-script-loader-fun migration))
+         (content (migration-load direction migration))
          (statements (cl-ppcre:split *sql-statement-separator* content)))
     (cl-dbi:with-transaction connection
       (dolist (statement statements)

@@ -32,8 +32,7 @@
    :base-migration
    :migration-id
    :migration-description
-   :migration-load-up-script
-   :migration-load-down-script
+   :migration-load
    :base-driver
    :driver-name
    :driver-provider
@@ -134,11 +133,11 @@ CREATE TABLE IF NOT EXISTS migration (
 
 (defmethod driver-apply-up-migration ((driver rdbms-postgresql-driver) (migration base-migration) &key)
   (log:debug "Applying upgrade migration: ~a - ~a" (migration-id migration) (migration-description migration))
-  (rdbms-postgresql-driver-apply-migration driver migration #'migration-load-up-script))
+  (rdbms-postgresql-driver-apply-migration :up driver migration))
 
 (defmethod driver-apply-down-migration ((driver rdbms-postgresql-driver) (migration base-migration) &key)
   (log:debug "Applying downgrade migration: ~a - ~a" (migration-id migration) (migration-description migration))
-  (rdbms-postgresql-driver-apply-migration driver migration #'migration-load-down-script))
+  (rdbms-postgresql-driver-apply-migration :down driver migration))
 
 (defun make-driver (provider connection-specification)
   "Creates a driver for performing migrations against a SQL database
@@ -153,17 +152,10 @@ Arguments:
                  :provider provider
                  :connection-specification connection-specification))
 
-;; (defparameter *tstdrv* (make-driver (cl-migratum.provider.local-path:make-local-path-provider "~/common-lisp/cl-migratum/t/migrations/") '(:database "migratum" :user-name "migratum" :password "FvbRd5qdeWHNum9p")))
-
-;; (driver-init *tstdrv*)
-
-;; (cl-migratum.core:apply-pending *tstdrv*)
-;; (cl-migratum.core:display-applied *tstdrv*)
-
-(defun rdbms-postgresql-driver-apply-migration (driver migration migration-script-loader-fun)
+(defun rdbms-postgresql-driver-apply-migration (direction driver migration)
   "Applies the script loaded using the migration script loader function"
   (let* ((db (database-of driver))
-         (content (funcall migration-script-loader-fun migration))
+         (content (migration-load direction migration))
          (statements (cl-ppcre:split *sql-statement-separator* content)))
     (hu.dwim.rdbms:with-database db
       (hu.dwim.rdbms:with-transaction
