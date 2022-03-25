@@ -6,7 +6,8 @@
   :name "cl-migratum.driver.rdbms-postgresql"
   :description "cl-migratum driver for driving migrations against SQL databases using hu.dwim.rdbms.postgresql"
   :version "0.1.3"
-  :author ("Marin Atanasov Nikolov <dnaeon@gmail.com>" "Kambiz Darabi <darabi@m-creations.net>")
+  :author ("Marin Atanasov Nikolov <dnaeon@gmail.com>"
+           "Kambiz Darabi <darabi@m-creations.net>")
   :maintainer "Marin Atanasov Nikolov <dnaeon@gmail.com>"
   :license "BSD-2 Clause"
   :homepage "https://github.com/dnaeon/cl-migratum"
