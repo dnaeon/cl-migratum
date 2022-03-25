@@ -55,7 +55,8 @@
                         :short-name #\d
                         :long-name "driver"
                         :required t
-                        :items '(("dbi" . :dbi))
+                        :items '(("dbi" . :dbi)
+                                 ("rdbms-pgsql" . :rdbms-pgsql))
                         :env-vars '("MIGRATUM_DRIVER")
                         :key :driver/kind)
    (clingon:make-option :enum
@@ -101,13 +102,13 @@
    (clingon:make-option :string
                         :category "DBI driver options"
                         :description "database username"
-                        :long-name "dbi-db-username"
+                        :long-name "dbi-db-user"
                         :env-vars '("MIGRATUM_DBI_USER")
                         :key :driver.dbi/db-user)
    (clingon:make-option :string
                         :category "DBI driver options"
                         :description "database password"
-                        :long-name "dbi-db-password"
+                        :long-name "dbi-db-pass"
                         :env-vars '("MIGRATUM_DBI_DB_PASSWORD")
                         :key :driver.dbi/db-pass)
    (clingon:make-option :integer
@@ -115,7 +116,41 @@
                         :description "database port"
                         :long-name "dbi-db-port"
                         :env-vars '("MIGRATUM_DBI_DB_PORT")
-                        :key :driver.dbi/db-port)))
+                        :key :driver.dbi/db-port)
+
+   ;; rdbms-postgresql specific driver options
+   (clingon:make-option :string
+                        :category "RDBMS-PGSQL driver options"
+                        :description "database host"
+                        :long-name "rdbms-pgsql-db-host"
+                        :env-vars '("PGHOST")
+                        :initial-value "localhost"
+                        :key :driver.rdbms-pgsql/db-host)
+   (clingon:make-option :string
+                        :category "RDBMS-PGSQL driver options"
+                        :description "database name"
+                        :long-name "rdbms-pgsql-db-name"
+                        :env-vars '("PGDATABASE")
+                        :key :driver.rdbms-pgsql/db-name)
+   (clingon:make-option :string
+                        :category "RDBMS-PGSQL driver options"
+                        :description "database username"
+                        :long-name "rdbms-pgsql-db-user"
+                        :env-vars '("PGUSER")
+                        :key :driver.rdbms-pgsql/db-user)
+   (clingon:make-option :string
+                        :category "RDBMS-PGSQL driver options"
+                        :description "database password"
+                        :long-name "rdbms-pgsql-db-pass"
+                        :env-vars '("PGPASSWORD")
+                        :key :driver.rdbms-pgsql/db-pass)
+   (clingon:make-option :integer
+                        :category "RDBMS-PGSQL driver options"
+                        :description "database port"
+                        :long-name "rdbms-pgsql-db-port"
+                        :env-vars '("PGPORT")
+                        :initial-value 5432
+                        :key :driver.rdbms-pgsql/db-port)))
 
 (defun top-level/pre-hook (cmd)
   (let ((level (clingon:getopt cmd :logging/level)))

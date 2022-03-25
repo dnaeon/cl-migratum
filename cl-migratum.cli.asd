@@ -42,6 +42,7 @@
   :source-control "https://github.com/dnaeon/cl-migratum"
   :depends-on (:cl-migratum
                :cl-migratum.driver.dbi
+               :cl-migratum.driver.rdbms-postgresql
                :cl-migratum.provider.local-path
                :clingon)
   :build-operation "program-op"
@@ -54,6 +55,7 @@
                              (:file "generics")
                              (:file "lp-provider")
                              (:file "dbi-driver")
+                             (:file "rdbms-pgsql-driver")
                              (:file "applied")
                              (:file "pending")
                              (:file "print-doc")
