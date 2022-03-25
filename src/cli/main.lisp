@@ -33,7 +33,8 @@
   "Returns the list of top-level sub-commands"
   (list
    (applied/command)
-   (pending/command)))
+   (pending/command)
+   (migrate/command)))
 
 (defun top-level/options ()
   "Returns the list of options for the top-level command"

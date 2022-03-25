@@ -56,4 +56,5 @@
                              (:file "dbi-driver")
                              (:file "applied")
                              (:file "pending")
+                             (:file "migrate")
                              (:file "main")))))
