@@ -34,7 +34,9 @@
   (list
    (applied/command)
    (pending/command)
-   (migrate/command)))
+   (migrate/command)
+   (print-doc/command)
+   (zsh-completions/command)))
 
 (defun top-level/options ()
   "Returns the list of options for the top-level command"

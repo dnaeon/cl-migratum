@@ -56,5 +56,7 @@
                              (:file "dbi-driver")
                              (:file "applied")
                              (:file "pending")
+                             (:file "print-doc")
                              (:file "migrate")
+                             (:file "zsh-completions")
                              (:file "main")))))
