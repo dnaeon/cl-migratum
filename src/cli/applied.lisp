@@ -25,32 +25,32 @@
 
 (in-package :cl-migratum.cli)
 
-(defun list-applied/handler (cmd)
-  "The handler for the `list-applied' command"
+(defun applied/handler (cmd)
+  "The handler for the `applied' command"
   (let* ((driver-kind (clingon:getopt cmd :driver/kind))
          (driver (get-driver driver-kind cmd))
-         (offset (clingon:getopt cmd :list-applied-cmd/offset))
-         (limit (clingon:getopt cmd :list-applied-cmd/limit)))
+         (offset (clingon:getopt cmd :applied-cmd/offset))
+         (limit (clingon:getopt cmd :applied-cmd/limit)))
     (cl-migratum:display-applied driver :offset offset :limit limit)))
 
-(defun list-applied/options ()
-  "Returns the options for the `list-applied' command"
+(defun applied/options ()
+  "Returns the options for the `applied' command"
   (list
    (clingon:make-option :integer
                         :description "fetch applied migrations at the given offset"
                         :long-name "offset"
                         :initial-value 0
-                        :key :list-applied-cmd/offset)
+                        :key :applied-cmd/offset)
    (clingon:make-option :integer
                         :description "fetch this number of migrations at max"
                         :long-name "limit"
                         :initial-value 100
-                        :key :list-applied-cmd/limit)))
+                        :key :applied-cmd/limit)))
 
-(defun list-applied/command ()
+(defun applied/command ()
   "Returns the command for listing applied migrations"
   (clingon:make-command
-   :name "list-applied"
+   :name "applied"
    :description "list applied migrations"
-   :options (list-applied/options)
-   :handler #'list-applied/handler))
+   :options (applied/options)
+   :handler #'applied/handler))
