@@ -23,37 +23,34 @@
 ;; (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 ;; THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-(defpackage :cl-migratum-cli-system
-  (:use :cl :asdf))
-(in-package :cl-migratum-cli-system)
+(in-package :cl-migratum.cli)
 
-(defsystem "cl-migratum.cli"
-  :name "cl-migratum.cli"
-  :long-name "cl-migratum.cli"
-  :description "CLI built on top of the cl-migratum system"
-  :version "0.1.0"
-  :author "Marin Atanasov Nikolov <dnaeon@gmail.com>"
-  :maintainer "Marin Atanasov Nikolov <dnaeon@gmail.com>"
-  :license "BSD 2-Clause"
-  :long-description #.(uiop:read-file-string
-                       (uiop:subpathname *load-pathname* "README.md"))
-  :homepage "https://github.com/dnaeon/cl-migratum"
-  :bug-tracker "https://github.com/dnaeon/cl-migratum"
-  :source-control "https://github.com/dnaeon/cl-migratum"
-  :depends-on (:cl-migratum
-               :cl-migratum.driver.dbi
-               :cl-migratum.provider.local-path
-               :clingon)
-  :build-operation "program-op"
-  :build-pathname "bin/migratum"
-  :entry-point "cl-migratum.cli:main"
-  :components ((:module "cli"
-                :pathname #P"src/cli/"
-                :serial t
-                :components ((:file "package")
-                             (:file "generics")
-                             (:file "lp-provider")
-                             (:file "dbi-driver")
-                             (:file "list-applied")
-                             (:file "list-pending")
-                             (:file "main")))))
+(defun list-applied/handler (cmd)
+  "The handler for the `list-applied' command"
+  (let* ((driver-kind (clingon:getopt cmd :driver/kind))
+         (driver (get-driver driver-kind cmd))
+         (offset (clingon:getopt cmd :list-applied-cmd/offset))
+         (limit (clingon:getopt cmd :list-applied-cmd/limit)))
+    (cl-migratum:display-applied driver :offset offset :limit limit)))
+
+(defun list-applied/options ()
+  "Returns the options for the `list-applied' command"
+  (list
+   (clingon:make-option :integer
+                        :description "fetch applied migrations at the given offset"
+                        :long-name "offset"
+                        :initial-value 0
+                        :key :list-applied-cmd/offset)
+   (clingon:make-option :integer
+                        :description "fetch this number of migrations at max"
+                        :long-name "limit"
+                        :initial-value 100
+                        :key :list-applied-cmd/limit)))
+
+(defun list-applied/command ()
+  "Returns the command for listing applied migrations"
+  (clingon:make-command
+   :name "list-applied"
+   :description "list applied migrations"
+   :options (list-applied/options)
+   :handler #'list-applied/handler))
