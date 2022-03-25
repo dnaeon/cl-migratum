@@ -32,8 +32,8 @@
 (defun top-level/sub-commands ()
   "Returns the list of top-level sub-commands"
   (list
-   (list-applied/command)
-   (list-pending/command)))
+   (applied/command)
+   (pending/command)))
 
 (defun top-level/options ()
   "Returns the list of options for the top-level command"

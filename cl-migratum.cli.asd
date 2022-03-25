@@ -54,6 +54,6 @@
                              (:file "generics")
                              (:file "lp-provider")
                              (:file "dbi-driver")
-                             (:file "list-applied")
-                             (:file "list-pending")
+                             (:file "applied")
+                             (:file "pending")
                              (:file "main")))))

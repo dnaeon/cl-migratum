@@ -25,15 +25,15 @@
 
 (in-package :cl-migratum.cli)
 
-(defun list-pending/handler (cmd)
-  "The handler for the `list-pending' command"
+(defun pending/handler (cmd)
+  "The handler for the `pending' command"
   (let* ((driver-kind (clingon:getopt cmd :driver/kind))
          (driver (get-driver driver-kind cmd)))
     (cl-migratum:display-pending driver)))
 
-(defun list-pending/command ()
+(defun pending/command ()
   "Returns the command for listing pending migrations"
   (clingon:make-command
-   :name "list-pending"
+   :name "pending"
    :description "list pending migrations"
-   :handler #'list-pending/handler))
+   :handler #'pending/handler))
