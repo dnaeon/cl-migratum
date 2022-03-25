@@ -35,8 +35,7 @@
    :base-provider
    :base-migration
    :migration-id
-   :migration-load-up-script
-   :migration-load-down-script
+   :migration-load
    :provider-list-migrations
    :provider-create-migration
    :make-migration-id)

@@ -36,8 +36,7 @@
    :migration-id
    :migration-description
    :migration-applied
-   :migration-load-up-script
-   :migration-load-down-script
+   :migration-load
    :base-provider
    :provider-init
    :provider-shutdown
@@ -87,11 +86,10 @@
     :documentation "Timestamp when the migration was applied"))
   (:documentation "Base class for migration resources"))
 
-(defgeneric migration-load-up-script (migration &key)
-  (:documentation "Returns the contents of the upgrade migration script"))
-
-(defgeneric migration-load-down-script (migration &key)
-  (:documentation "Returns the contents of the downgrade migration script"))
+(defgeneric migration-load (direction migration &key)
+  (:documentation "Loads the given migration. Direction is :UP or
+  :DOWN which specifies whether to load the upgrade or downgrade
+  migration respectively."))
 
 (defclass base-provider ()
   ((name
