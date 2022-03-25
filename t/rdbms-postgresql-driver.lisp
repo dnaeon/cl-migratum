@@ -1,4 +1,5 @@
-;; Copyright (c) 2020-2022 Marin Atanasov Nikolov <dnaeon@gmail.com>, Kambiz Darabi <darabi@m-creations.net>
+;; Copyright (c) 2020-2022 Marin Atanasov Nikolov <dnaeon@gmail.com>
+;; Copyright (c) 2022 Kambiz Darabi <darabi@m-creations.net>
 ;; All rights reserved.
 ;;
 ;; Redistribution and use in source and binary forms, with or without
