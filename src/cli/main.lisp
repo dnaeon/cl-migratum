@@ -31,11 +31,21 @@
 
 (defun top-level/sub-commands ()
   "Returns the list of top-level sub-commands"
-  nil)
+  (list
+   (list-pending/command)))
 
 (defun top-level/options ()
   "Returns the list of options for the top-level command"
   (list
+   (clingon:make-option :enum
+                        :description "log level"
+                        :short-name #\l
+                        :long-name "log-level"
+                        :items '(("info" . :info)
+                                 ("debug" . :debug))
+                        :initial-value "info"
+                        :env-vars '("MIGRATUM_LOG_LEVEL")
+                        :key :logging/level)
    (clingon:make-option :enum
                         :description "migration driver to use"
                         :short-name #\d
@@ -103,6 +113,10 @@
                         :env-vars '("MIGRATUM_DBI_DB_PORT")
                         :key :driver.dbi/db-port)))
 
+(defun top-level/pre-hook (cmd)
+  (let ((level (clingon:getopt cmd :logging/level)))
+    (log:config level)))
+
 (defun top-level/command ()
   "Returns the top-level command"
   (clingon:make-command
@@ -111,9 +125,10 @@
    :description "migration tool"
    :authors '("Marin Atanasov Nikolov <dnaeon@gmail.com>")
    :license "BSD 2-Clause"
-   :handler #'top-level/handler
    :options (top-level/options)
-   :sub-commands (top-level/sub-commands)))
+   :sub-commands (top-level/sub-commands)
+   :handler #'top-level/handler
+   :pre-hook #'top-level/pre-hook))
 
 (defun main ()
   "Main CLI entrypoint"
