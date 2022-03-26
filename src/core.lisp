@@ -37,6 +37,7 @@
    :migration-description
    :migration-applied
    :migration-load
+   :migration-kind
    :base-provider
    :provider-init
    :provider-shutdown
@@ -75,10 +76,13 @@
 (defgeneric migration-applied (migration)
   (:documentation "Returns a timestamp describing when the migration was applied or NIL if not applied"))
 
-(defgeneric migration-load (direction migration &key)
+(defgeneric migration-load (direction migration)
   (:documentation "Loads the given migration. Direction is :UP or
   :DOWN which specifies whether to load the upgrade or downgrade
   migration respectively."))
+
+(defgeneric migration-kind (migration)
+  (:documentation "Returns the kind of the migration resource as a keyword, e.g. :sql, :lisp, etc"))
 
 (defclass base-migration ()
   ((id
@@ -97,13 +101,13 @@
     :initarg :applied
     :initform nil
     :accessor migration-applied
-    :documentation "Timestamp when the migration was applied"))
+    :documentation "Timestamp when the migration was applied")
+   (kind
+    :initarg :kind
+    :initform (error "Must specify migration kind")
+    :reader migration-kind
+    :documentation "A keyword describing the migration kind"))
   (:documentation "Base class for migration resources"))
-
-(defgeneric migration-load (direction migration &key)
-  (:documentation "Loads the given migration. Direction is :UP or
-  :DOWN which specifies whether to load the upgrade or downgrade
-  migration respectively."))
 
 (defclass base-provider ()
   ((name
