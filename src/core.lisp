@@ -89,18 +89,18 @@
     :type integer
     :initarg :id
     :initform (error "Must specify migration id")
-    :accessor migration-id
+    :reader migration-id
     :documentation "Unique migration id")
    (description
     :type string
     :initarg :description
     :initform (error "Must specify migration description")
-    :accessor migration-description
+    :reader migration-description
     :documentation "Description of the migration")
    (applied
     :initarg :applied
     :initform nil
-    :accessor migration-applied
+    :reader migration-applied
     :documentation "Timestamp when the migration was applied")
    (kind
     :initarg :kind
