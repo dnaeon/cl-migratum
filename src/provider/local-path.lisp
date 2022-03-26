@@ -68,18 +68,26 @@
     :initform (error "Must specify down script path")
     :accessor migration-down-script-path
     :documentation "Path to the downgrade script"))
-  (:documentation "Migration resource discovered from a local path"))
+  (:documentation "Base class for migration resources discovered from a local path"))
 
-(defmethod migration-load-up-script ((migration local-path-migration) &key)
+(defclass sql-migration (local-path-migration)
+  ()
+  (:default-initargs
+   :kind :sql)
+  (:documentation "Migration resource from local SQL path"))
+
+(defmethod migration-load ((direction (eql :up)) (migration sql-migration))
+  "Loads the upgrade SQL migration"
   (let ((id (migration-id migration))
-        (path (local-path-migration-up-script-path migration)))
-    (log:debug "Loading upgrade migration for id ~a from ~a" id path)
+        (path (migration-up-script-path migration)))
+    (log:debug "[SQL] Loading  upgrade migration for id ~a from ~a" id path)
     (uiop:read-file-string path)))
 
-(defmethod migration-load-down-script ((migration local-path-migration) &key)
+(defmethod migration-load ((direction (eql :down)) (migration sql-migration))
+  "Loads the downgrade SQL migration"
   (let ((id (migration-id migration))
-        (path (local-path-migration-down-script-path migration)))
-    (log:debug "Loading downgrade migration for id ~a from ~a" id path)
+        (path (migration-down-script-path migration)))
+    (log:debug "[SQL] Loading downgrade migration for id ~a from ~a" id path)
     (uiop:read-file-string path)))
 
 (defclass local-path-provider (base-provider)

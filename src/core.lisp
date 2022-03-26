@@ -101,7 +101,7 @@
     :initarg :applied
     :initform nil
     :reader migration-applied
-    :documentation "Timestamp when the migration was applied")
+    :documentation "Timestamp when the migration was applied or NIL if it is not applied")
    (kind
     :initarg :kind
     :initform (error "Must specify migration kind")
