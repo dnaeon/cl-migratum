@@ -66,6 +66,20 @@
    :revert-last))
 (in-package :cl-migratum.core)
 
+(defgeneric migration-id (migration)
+  (:documentation "Returns the ID of the migration. The ID must be a positive integer"))
+
+(defgeneric migration-description (migration)
+  (:documentation "Returns a string describing the migration resource"))
+
+(defgeneric migration-applied (migration)
+  (:documentation "Returns a timestamp describing when the migration was applied or NIL if not applied"))
+
+(defgeneric migration-load (direction migration &key)
+  (:documentation "Loads the given migration. Direction is :UP or
+  :DOWN which specifies whether to load the upgrade or downgrade
+  migration respectively."))
+
 (defclass base-migration ()
   ((id
     :type integer
