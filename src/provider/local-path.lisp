@@ -49,7 +49,7 @@
    :local-path-migration
    :migration-up-script-path
    :migration-down-script-path
-   :local-path-provider-paths
+   :provider-paths
    :make-local-path-provider))
 (in-package :cl-migratum.provider.local-path)
 
@@ -66,7 +66,7 @@
    (down-script-path
     :initarg :down-script-path
     :initform (error "Must specify down script path")
-    :accessor migration-down-script-path
+    :reader migration-down-script-path
     :documentation "Path to the downgrade script"))
   (:documentation "Base class for migration resources discovered from a local path"))
 
@@ -94,15 +94,15 @@
   ((paths
     :initarg :paths
     :initform (error "Must specify migration resource paths")
-    :accessor local-path-provider-paths
+    :reader provider-paths
     :documentation "Local paths from which to discover migrations"))
   (:documentation "Provider for discovering migrations from a local path"))
 
 (defmethod initialize-instance :after ((provider local-path-provider) &key)
-  (unless (listp (local-path-provider-paths provider))
+  (unless (listp (provider-paths provider))
     (error "Must specify a list of migration resource paths")))
 
-(defun make-local-path-provider (paths)
+(defun make-provider (paths)
   "Creates a local path provider using the given path"
   (make-instance 'local-path-provider
                  :name "local-path"
