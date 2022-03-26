@@ -36,6 +36,7 @@
    :base-migration
    :migration-id
    :migration-load
+   :migration-kind
    :provider-list-migrations
    :provider-create-migration
    :make-migration-id)
@@ -46,8 +47,8 @@
    :normalize-description
    :local-path-provider
    :local-path-migration
-   :local-path-migration-up-script-path
-   :local-path-migration-down-script-path
+   :migration-up-script-path
+   :migration-down-script-path
    :local-path-provider-paths
    :make-local-path-provider))
 (in-package :cl-migratum.provider.local-path)
@@ -60,13 +61,13 @@
   ((up-script-path
     :initarg :up-script-path
     :initform (error "Must specify up script path")
-    :accessor local-path-migration-up-script-path
-    :documentation "Path to the upgrade SQL script")
+    :reader migration-up-script-path
+    :documentation "Path to the upgrade script")
    (down-script-path
     :initarg :down-script-path
     :initform (error "Must specify down script path")
-    :accessor local-path-migration-down-script-path
-    :documentation "Path to the downgrade SQL script"))
+    :accessor migration-down-script-path
+    :documentation "Path to the downgrade script"))
   (:documentation "Migration resource discovered from a local path"))
 
 (defmethod migration-load-up-script ((migration local-path-migration) &key)
