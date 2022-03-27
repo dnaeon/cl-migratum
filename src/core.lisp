@@ -116,7 +116,7 @@
     :type string
     :initarg :name
     :initform (error "Must specify provider name")
-    :accessor provider-name
+    :reader provider-name
     :documentation "Name of the provider")
    (initialized
     :initarg :initialized
@@ -150,12 +150,12 @@
     :type string
     :initarg :name
     :initform (error "Must specify driver name")
-    :accessor driver-name
+    :reader driver-name
     :documentation "Name of the driver")
    (provider
     :initarg :provider
     :initform (error "Must specify migrations provider")
-    :accessor driver-provider
+    :reader driver-provider
     :documentation "Provider used by the driver")
    (initialized
     :initarg :initialized
