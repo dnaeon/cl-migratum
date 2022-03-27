@@ -223,7 +223,7 @@ GROUP-MIGRATION-FILES-BY id function."
 
 (defmethod provider-create-migration ((direction (eql :up)) (kind (eql :sql))
                                       (provider local-path-provider) (id integer)
-                                      (description string) &key content)
+                                      (description string) (content string) &key)
   (let* ((description (normalize-description description))
          (provider-path (first (provider-paths provider)))
          (name (format nil "~A-~A.up" id description))
@@ -238,7 +238,7 @@ GROUP-MIGRATION-FILES-BY id function."
 
 (defmethod provider-create-migration ((direction (eql :down)) (kind (eql :sql))
                                       (provider local-path-provider) (id integer)
-                                      (description string) &key content)
+                                      (description string) (content string) &key)
   (let* ((description (normalize-description description))
          (provider-path (first (provider-paths provider)))
          (name (format nil "~A-~A.down" id description))

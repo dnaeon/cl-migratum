@@ -134,7 +134,7 @@
 (defgeneric provider-list-migrations (provider &key)
   (:documentation "Returns the list of migration resources discovered by the provider"))
 
-(defgeneric provider-create-migration (direction kind provider id description &key content)
+(defgeneric provider-create-migration (direction kind provider id description content &key)
   (:documentation "Creates a new migration resource using the given provider"))
 
 (defmethod provider-init ((provider base-provider) &key)
