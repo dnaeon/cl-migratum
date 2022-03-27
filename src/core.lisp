@@ -68,13 +68,16 @@
 (in-package :cl-migratum.core)
 
 (defgeneric migration-id (migration)
-  (:documentation "Returns the ID of the migration. The ID must be a positive integer"))
+  (:documentation "Returns the ID of the migration. The ID must be a
+  positive integer"))
 
 (defgeneric migration-description (migration)
-  (:documentation "Returns a string describing the migration resource"))
+  (:documentation "Returns a string describing the migration
+  resource"))
 
 (defgeneric migration-applied (migration)
-  (:documentation "Returns a timestamp describing when the migration was applied or NIL if not applied"))
+  (:documentation "Returns a timestamp describing when the migration
+  was applied or NIL if not applied"))
 
 (defgeneric migration-load (direction migration)
   (:documentation "Loads the given migration. Direction is :UP or
@@ -82,7 +85,8 @@
   migration respectively."))
 
 (defgeneric migration-kind (migration)
-  (:documentation "Returns the kind of the migration resource as a keyword, e.g. :sql, :lisp, etc"))
+  (:documentation "Returns the kind of the migration resource as a
+  keyword, e.g. :sql, :lisp, etc"))
 
 (defclass base-migration ()
   ((id
@@ -123,23 +127,23 @@
     :documentation "Returns T if provider is initialized, NIL otherwise"))
   (:documentation "Base class for migration providers"))
 
-(defgeneric provider-init (provider &key)
+(defgeneric provider-init (provider)
   (:documentation "Initializes the driver, if needed"))
 
-(defgeneric provider-shutdown (provider &key)
+(defgeneric provider-shutdown (provider)
   (:documentation "Shutdowns the provider and cleans up any allocated resources"))
 
-(defgeneric provider-list-migrations (provider &key)
+(defgeneric provider-list-migrations (provider)
   (:documentation "Returns the list of migration resources discovered by the provider"))
 
-(defgeneric provider-create-migration (provider &key id description up down)
+(defgeneric provider-create-migration (direction kind provider id description &key content)
   (:documentation "Creates a new migration resource using the given provider"))
 
-(defmethod provider-init ((provider base-provider) &key)
+(defmethod provider-init ((provider base-provider))
   (log:debug "Initializing provider ~a" (provider-name provider))
   (setf (provider-initialized provider) t))
 
-(defmethod provider-shutdown ((provider base-provider) &key)
+(defmethod provider-shutdown ((provider base-provider))
   (log:debug "Shutting down provider ~a" (provider-name provider))
   (setf (provider-initialized provider) nil))
 

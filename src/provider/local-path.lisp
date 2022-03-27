@@ -180,7 +180,7 @@ GROUP-MIGRATION-FILES-BY id function."
                               (string-trim #(#\Space) description)
                               "_"))
 
-(defmethod provider-list-migrations ((provider local-path-provider) &key)
+(defmethod provider-list-migrations ((provider local-path-provider))
   (log:debug "Migration paths to be scanned: ~a" (provider-paths provider))
   (let* ((paths (provider-paths provider))
          (scanner (cl-ppcre:create-scanner (provider-scan-pattern provider)))
@@ -212,26 +212,41 @@ GROUP-MIGRATION-FILES-BY id function."
              groups)
     result))
 
-(defmethod provider-create-migration ((provider local-path-provider) &key id description up down)
-  (log:debug "Creating new migration in path ~a" (first (provider-paths provider)))
-  (let* ((provider-path (first (provider-paths provider)))
-         (id (or id (make-migration-id)))
-         (description (normalize-description (or description "new migration")))
-         (up-content (or up ""))
-         (down-content (or down ""))
-         (up-file-name (format nil "~a-~a.up" id description))
-         (down-file-name (format nil "~a-~a.down" id description))
-         (up-file-path (make-pathname :name up-file-name :type "sql" :directory (pathname-directory (truename provider-path))))
-         (down-file-path (make-pathname :name down-file-name :type "sql" :directory (pathname-directory (truename provider-path)))))
-    (log:debug "Creating UP migration file ~a" up-file-path)
-    (with-open-file (out up-file-path :direction :output :if-does-not-exist :create)
-      (write-string up-content out))
-    (log:debug "Creating DOWN migration file ~a" down-file-path)
-    (with-open-file (out down-file-path :direction :output :if-does-not-exist :create)
-      (write-string down-content out))
-    (make-instance 'local-path-migration
+(defun %write-sql-migration-file (id description direction path content)
+  (log:debug "[SQL] Creating new migration in ~a" path)
+  (with-open-file (out path :direction :output :if-does-not-exist :create)
+    (format out "-- id: ~A~%" id)
+    (format out "-- direction: ~A~%" direction)
+    (format out "-- description: ~A~2%" description)
+    (when content
+      (format out "~A~%" content))))
+
+(defmethod provider-create-migration ((direction (eql :up)) (kind (eql :sql))
+                                      (provider local-path-provider) (id integer)
+                                      (description string) &key content)
+  (let* ((description (normalize-description description))
+         (provider-path (first (provider-paths provider)))
+         (name (format nil "~A-~A.up" id description))
+         (file-path (make-pathname :name name :type "sql" :directory (pathname-directory (truename provider-path)))))
+    (%write-sql-migration-file id description direction file-path content)
+    (make-instance 'sql-migration
                    :id id
                    :description description
                    :applied nil
-                   :up-script-path up-file-path
-                   :down-script-path down-file-path)))
+                   :up-script-path file-path
+                   :down-script-path nil)))
+
+(defmethod provider-create-migration ((direction (eql :down)) (kind (eql :sql))
+                                      (provider local-path-provider) (id integer)
+                                      (description string) &key content)
+  (let* ((description (normalize-description description))
+         (provider-path (first (provider-paths provider)))
+         (name (format nil "~A-~A.down" id description))
+         (file-path (make-pathname :name name :type "sql" :directory (pathname-directory (truename provider-path)))))
+    (%write-sql-migration-file id description direction file-path content)
+    (make-instance 'sql-migration
+                   :id id
+                   :description description
+                   :applied nil
+                   :up-script-path nil
+                   :down-script-path file-path)))
