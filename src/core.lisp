@@ -229,11 +229,12 @@
 (defun display-applied (driver &rest rest)
   "Displays the applied migrations in a table"
   (let ((applied (apply #'driver-list-applied driver rest))
-        (table (ascii-table:make-table (list "ID" "DESCRIPTION" "APPLIED") :header "APPLIED MIGRATIONS")))
+        (table (ascii-table:make-table (list "ID" "DESCRIPTION" "APPLIED" "KIND") :header "APPLIED MIGRATIONS")))
     (dolist (migration applied)
       (ascii-table:add-row table (list (migration-id migration)
                                        (migration-description migration)
-                                       (migration-applied migration))))
+                                       (migration-applied migration)
+                                       (migration-kind migration))))
     (ascii-table:add-separator table)
     (ascii-table:add-row table (list "" "TOTAL" (length applied)))
     (when applied
