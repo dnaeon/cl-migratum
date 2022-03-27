@@ -213,12 +213,13 @@
 (defun display-pending (driver)
   "Display the pending migrations in a table"
   (let ((pending (list-pending driver))
-        (table (ascii-table:make-table (list "ID" "DESCRIPTION") :header "PENDING MIGRATIONS")))
+        (table (ascii-table:make-table (list "ID" "DESCRIPTION" "KIND") :header "PENDING MIGRATIONS")))
     (dolist (migration pending)
       (ascii-table:add-row table (list (migration-id migration)
-                                       (migration-description migration))))
+                                       (migration-description migration)
+                                       (migration-kind migration))))
     (ascii-table:add-separator table)
-    (ascii-table:add-row table (list "TOTAL" (length pending)))
+    (ascii-table:add-row table (list "" "TOTAL" (length pending)))
     (when pending
       (ascii-table:display table))))
 
@@ -232,7 +233,7 @@
                                        (migration-applied migration)
                                        (migration-kind migration))))
     (ascii-table:add-separator table)
-    (ascii-table:add-row table (list "" "TOTAL" (length applied)))
+    (ascii-table:add-row table (list "" "" "TOTAL" (length applied)))
     (when applied
       (ascii-table:display table))))
 
