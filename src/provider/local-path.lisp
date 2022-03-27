@@ -180,7 +180,7 @@ GROUP-MIGRATION-FILES-BY id function."
                               (string-trim #(#\Space) description)
                               "_"))
 
-(defmethod provider-list-migrations ((provider local-path-provider))
+(defmethod provider-list-migrations ((provider local-path-provider) &key)
   (log:debug "Migration paths to be scanned: ~a" (provider-paths provider))
   (let* ((paths (provider-paths provider))
          (scanner (cl-ppcre:create-scanner (provider-scan-pattern provider)))

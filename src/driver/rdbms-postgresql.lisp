@@ -31,6 +31,7 @@
    :cl-migratum
    :base-migration
    :migration-id
+   :migration-kind
    :migration-description
    :migration-load
    :base-driver
@@ -40,8 +41,7 @@
    :driver-shutdown
    :driver-initialized
    :driver-list-applied
-   :driver-apply-up-migration
-   :driver-apply-down-migration
+   :driver-apply-migration
    :driver-register-migration
    :driver-unregister-migration)
   (:import-from :log)
@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS migration (
     (set-log-level 'hu.dwim.rdbms::rdbms +warn+)))
 
 (defmethod driver-init ((driver rdbms-postgresql-driver) &key)
-  (log:debug "Initializing ~a driver" (driver-name driver))
+  (log:debug "[RDBMS-PGSQL] Initializing ~A driver" (driver-name driver))
   (let* ((database (database-of driver))
          (query *sql-init-schema*))
     (hu.dwim.rdbms:with-database database
@@ -98,33 +98,35 @@ CREATE TABLE IF NOT EXISTS migration (
     (setf (driver-initialized driver) t)))
 
 (defmethod driver-shutdown ((driver rdbms-postgresql-driver) &key)
-  (log:debug "Shutting down ~a driver" (driver-name driver))
+  (log:debug "[RDBMS-PGSQL] Shutting down ~A driver" (driver-name driver))
   (setf (driver-initialized driver) nil))
 
 (defmethod driver-list-applied ((driver rdbms-postgresql-driver) &key (offset 0) (limit 100))
-  (log:debug "Fetching list of applied migrations")
+  (log:debug "[RDBMS-PGSQL] Fetching list of applied migrations")
   (let* ((db (database-of driver))
          (query (format nil "SELECT * FROM migration ORDER BY id DESC LIMIT ~A OFFSET ~A" limit offset))
          (rows (hu.dwim.rdbms:with-database db (hu.dwim.rdbms:with-transaction (hu.dwim.rdbms:execute query :result-type 'list)))))
     (mapcar (lambda (row)
               (make-instance 'base-migration
                              :id (nth 0 row)
-                             :description (nth 1 row)
-                             :applied (nth 2 row)))
+                             :kind (intern (nth 1 row) :keyword)
+                             :description (nth 2 row)
+                             :applied (nth 3 row)))
             rows)))
 
 (defmethod driver-register-migration ((driver rdbms-postgresql-driver) (migration base-migration) &key)
-  (log:debug "Registering migration as successful: ~a" (migration-id migration))
+  (log:debug "[RDBMS-PGSQL] Registering migration as successful: ~a" (migration-id migration))
   (let* ((db (database-of driver))
          (id (migration-id migration))
          (description (migration-description migration))
-         (query (format nil "INSERT INTO migration (id, description) VALUES (~A, '~A')" id description)))
+         (kind (string (migration-kind migration)))
+         (query (format nil "INSERT INTO migration (id, description, kind) VALUES (~A, '~A', '~A')" id description kind)))
     (hu.dwim.rdbms:with-database db
       (hu.dwim.rdbms:with-transaction
         (hu.dwim.rdbms:execute query)))))
 
 (defmethod driver-unregister-migration ((driver rdbms-postgresql-driver) (migration base-migration) &key)
-  (log:debug "Unregistering migration: ~a" (migration-id migration))
+  (log:debug "[RDBMS-PGSQL] Unregistering migration: ~A" (migration-id migration))
   (let* ((db (database-of driver))
          (id (migration-id migration))
          (query (format nil "DELETE FROM migration WHERE id = ~A" id)))
@@ -132,13 +134,13 @@ CREATE TABLE IF NOT EXISTS migration (
       (hu.dwim.rdbms:with-transaction
         (hu.dwim.rdbms:execute query)))))
 
-(defmethod driver-apply-up-migration ((driver rdbms-postgresql-driver) (migration base-migration) &key)
-  (log:debug "Applying upgrade migration: ~a - ~a" (migration-id migration) (migration-description migration))
-  (rdbms-postgresql-driver-apply-migration :up driver migration))
+(defmethod driver-apply-migration ((direction (eql :up)) (kind (eql :sql))
+                                   (driver rdbms-postgresql-driver) migration &key)
+  (%rdbms-postgresql-driver-apply-migration direction driver migration))
 
-(defmethod driver-apply-down-migration ((driver rdbms-postgresql-driver) (migration base-migration) &key)
-  (log:debug "Applying downgrade migration: ~a - ~a" (migration-id migration) (migration-description migration))
-  (rdbms-postgresql-driver-apply-migration :down driver migration))
+(defmethod driver-apply-migration ((direction (eql :down)) (kind (eql :sql))
+                                   (driver rdbms-postgresql-driver) migration &key)
+  (%rdbms-postgresql-driver-apply-migration direction driver migration))
 
 (defun make-driver (provider connection-specification)
   "Creates a driver for performing migrations against a SQL database
@@ -153,11 +155,15 @@ Arguments:
                  :provider provider
                  :connection-specification connection-specification))
 
-(defun rdbms-postgresql-driver-apply-migration (direction driver migration)
+(defun %rdbms-postgresql-driver-apply-migration (direction driver migration)
   "Applies the script loaded using the migration script loader function"
-  (let* ((db (database-of driver))
+  (let* ((id (migration-id migration))
+         (kind (migration-kind migration))
+         (description (migration-description migration))
+         (db (database-of driver))
          (content (migration-load direction migration))
          (statements (cl-ppcre:split *sql-statement-separator* content)))
+    (log:debug "[RDBMS-PGSQL] Applying ~A migration: ~A - ~A (~A)" direction id description kind)
     (hu.dwim.rdbms:with-database db
       (hu.dwim.rdbms:with-transaction
         (dolist (statement statements)

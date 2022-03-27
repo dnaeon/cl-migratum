@@ -55,8 +55,7 @@
    :driver-list-applied
    :driver-register-migration
    :driver-unregister-migration
-   :driver-apply-up-migration
-   :driver-apply-down-migration
+   :driver-apply-migration
    :list-pending
    :latest-migration
    :display-pending
@@ -127,23 +126,23 @@
     :documentation "Returns T if provider is initialized, NIL otherwise"))
   (:documentation "Base class for migration providers"))
 
-(defgeneric provider-init (provider)
+(defgeneric provider-init (provider &key)
   (:documentation "Initializes the driver, if needed"))
 
-(defgeneric provider-shutdown (provider)
+(defgeneric provider-shutdown (provider &key)
   (:documentation "Shutdowns the provider and cleans up any allocated resources"))
 
-(defgeneric provider-list-migrations (provider)
+(defgeneric provider-list-migrations (provider &key)
   (:documentation "Returns the list of migration resources discovered by the provider"))
 
 (defgeneric provider-create-migration (direction kind provider id description &key content)
   (:documentation "Creates a new migration resource using the given provider"))
 
-(defmethod provider-init ((provider base-provider))
+(defmethod provider-init ((provider base-provider) &key)
   (log:debug "Initializing provider ~a" (provider-name provider))
   (setf (provider-initialized provider) t))
 
-(defmethod provider-shutdown ((provider base-provider))
+(defmethod provider-shutdown ((provider base-provider) &key)
   (log:debug "Shutting down provider ~a" (provider-name provider))
   (setf (provider-initialized provider) nil))
 
@@ -178,11 +177,8 @@
 (defgeneric driver-register-migration (driver migration &key)
   (:documentation "Registers a successfully applied migration"))
 
-(defgeneric driver-apply-up-migration (driver migration &key)
-  (:documentation "Applies the upgrade migration script using the given driver"))
-
-(defgeneric driver-apply-down-migration (driver migration &key)
-  (:documentation "Applies the downgrade migration script using the given driver"))
+(defgeneric driver-apply-migration (direction kind driver migration &key)
+  (:documentation "Applies the migration script using the given driver and direction"))
 
 (defgeneric driver-unregister-migration (driver migration &key)
   (:documentation "Unregisters a previously applied migration"))
@@ -245,11 +241,12 @@
 
 (defun apply-and-register (driver migration)
   "Applies the migration and registers it"
-  (log:info "Applying migration ~a - ~a"
-            (migration-id migration)
-            (migration-description migration))
-      (driver-apply-up-migration driver migration)
-      (driver-register-migration driver migration))
+  (let ((id (migration-id migration))
+        (description (migration-description migration))
+        (kind (migration-kind migration)))
+    (log:info "Applying migration ~A - ~A (~A)" id description kind)
+    (driver-apply-migration :up kind driver migration)
+    (driver-register-migration driver migration)))
 
 (defun apply-pending (driver)
   "Applies the pending migrations"
@@ -270,10 +267,11 @@ driver provider, in order to ensure we can load the
 downgrade script."
   (let* ((id (migration-id migration))
          (description (migration-description migration))
+         (kind (migration-kind migration))
          (provider (driver-provider driver))
          (to-revert (provider-find-migration-by-id provider id)))
-    (log:info "Reverting migration ~a - ~a" id description)
-    (driver-apply-down-migration driver to-revert)
+    (log:info "Reverting migration ~A - ~A (~A)" id description kind)
+    (driver-apply-migration :down kind driver to-revert)
     (driver-unregister-migration driver to-revert)))
 
 (defun apply-next (driver &key (count 1))
