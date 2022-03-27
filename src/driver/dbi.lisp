@@ -42,8 +42,7 @@
    :driver-initialized
    :driver-list-applied
    :driver-apply-migration
-   :driver-register-migration
-   :driver-unregister-migration)
+   :driver-register-migration)
   (:import-from :log)
   (:import-from :cl-dbi)
   (:import-from :cl-ppcre)
@@ -102,7 +101,7 @@ CREATE TABLE IF NOT EXISTS migration (
                              :applied (getf row :|applied|)))
             rows)))
 
-(defmethod driver-register-migration ((driver dbi-driver) migration &key)
+(defmethod driver-register-migration ((direction (eql :up)) (driver dbi-driver) migration &key)
   (log:debug "[CL-DBI] Registering migration as successful: ~A" (migration-id migration))
   (let* ((connection (dbi-driver-connection driver))
          (id (migration-id migration))
@@ -112,7 +111,7 @@ CREATE TABLE IF NOT EXISTS migration (
     (cl-dbi:with-transaction connection
       (cl-dbi:execute query (list id description kind)))))
 
-(defmethod driver-unregister-migration ((driver dbi-driver) migration &key)
+(defmethod driver-register-migration ((direction (eql :down)) (driver dbi-driver) migration &key)
   (log:debug "[CL-DBI] Unregistering migration: ~a" (migration-id migration))
   (let* ((connection (dbi-driver-connection driver))
          (id (migration-id migration))

@@ -54,7 +54,6 @@
    :driver-initialized
    :driver-list-applied
    :driver-register-migration
-   :driver-unregister-migration
    :driver-apply-migration
    :list-pending
    :latest-migration
@@ -174,14 +173,11 @@
 (defgeneric driver-list-applied (driver &key)
   (:documentation "Returns a list of the applied migrations in descending order"))
 
-(defgeneric driver-register-migration (driver migration &key)
-  (:documentation "Registers a successfully applied migration"))
+(defgeneric driver-register-migration (direction driver migration &key)
+  (:documentation "Register or unregister a migration depending on the given direction"))
 
 (defgeneric driver-apply-migration (direction kind driver migration &key)
   (:documentation "Applies the migration script using the given driver and direction"))
-
-(defgeneric driver-unregister-migration (driver migration &key)
-  (:documentation "Unregisters a previously applied migration"))
 
 (defmethod driver-init ((driver base-driver) &key)
   (log:debug "Initializing driver ~a" (driver-name driver))
@@ -247,7 +243,7 @@
         (kind (migration-kind migration)))
     (log:info "Applying migration ~A - ~A (~A)" id description kind)
     (driver-apply-migration :up kind driver migration)
-    (driver-register-migration driver migration)))
+    (driver-register-migration :up driver migration)))
 
 (defun apply-pending (driver)
   "Applies the pending migrations"
@@ -273,7 +269,7 @@ downgrade script."
          (to-revert (provider-find-migration-by-id provider id)))
     (log:info "Reverting migration ~A - ~A (~A)" id description kind)
     (driver-apply-migration :down kind driver to-revert)
-    (driver-unregister-migration driver to-revert)))
+    (driver-register-migration :down driver to-revert)))
 
 (defun apply-next (driver &key (count 1))
   "Apply the next COUNT of pending migrations"

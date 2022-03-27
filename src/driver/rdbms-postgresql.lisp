@@ -42,8 +42,7 @@
    :driver-initialized
    :driver-list-applied
    :driver-apply-migration
-   :driver-register-migration
-   :driver-unregister-migration)
+   :driver-register-migration)
   (:import-from :log)
   (:import-from :hu.dwim.logger
    :+warn+
@@ -114,7 +113,8 @@ CREATE TABLE IF NOT EXISTS migration (
                              :applied (nth 3 row)))
             rows)))
 
-(defmethod driver-register-migration ((driver rdbms-postgresql-driver) (migration base-migration) &key)
+(defmethod driver-register-migration ((direction (eql :up)) (driver rdbms-postgresql-driver)
+                                      migration &key)
   (log:debug "[RDBMS-PGSQL] Registering migration as successful: ~a" (migration-id migration))
   (let* ((db (database-of driver))
          (id (migration-id migration))
@@ -125,7 +125,8 @@ CREATE TABLE IF NOT EXISTS migration (
       (hu.dwim.rdbms:with-transaction
         (hu.dwim.rdbms:execute query)))))
 
-(defmethod driver-unregister-migration ((driver rdbms-postgresql-driver) (migration base-migration) &key)
+(defmethod driver-register-migration ((direction (eql :down)) (driver rdbms-postgresql-driver)
+                                      migration &key)
   (log:debug "[RDBMS-PGSQL] Unregistering migration: ~A" (migration-id migration))
   (let* ((db (database-of driver))
          (id (migration-id migration))
