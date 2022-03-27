@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS migration (
   (:documentation "Driver for performing SQL migrations"))
 
 (defmethod driver-init ((driver dbi-driver) &key)
-  (log:debug "[CL-DBI] Initializing ~a driver" (driver-name driver))
+  (log:debug "[CL-DBI] Initializing ~A driver" (driver-name driver))
   (let* ((connection (dbi-driver-connection driver))
          (query (cl-dbi:prepare connection *sql-init-schema*)))
     (cl-dbi:with-transaction connection
@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS migration (
     (setf (driver-initialized driver) t)))
 
 (defmethod driver-shutdown ((driver dbi-driver) &key)
-  (log:debug "[CL-DBI] Shutting down ~a driver" (driver-name driver))
+  (log:debug "[CL-DBI] Shutting down ~A driver" (driver-name driver))
   (let ((connection (dbi-driver-connection driver)))
     (cl-dbi:disconnect connection))
   (setf (driver-initialized driver) nil))
@@ -112,7 +112,7 @@ CREATE TABLE IF NOT EXISTS migration (
       (cl-dbi:execute query (list id description kind)))))
 
 (defmethod driver-register-migration ((direction (eql :down)) (driver dbi-driver) migration &key)
-  (log:debug "[CL-DBI] Unregistering migration: ~a" (migration-id migration))
+  (log:debug "[CL-DBI] Unregistering migration: ~A" (migration-id migration))
   (let* ((connection (dbi-driver-connection driver))
          (id (migration-id migration))
          (query (cl-dbi:prepare connection "DELETE FROM migration WHERE id = ?")))
@@ -126,7 +126,7 @@ CREATE TABLE IF NOT EXISTS migration (
          (connection (dbi-driver-connection driver))
          (content (migration-load direction migration))
          (statements (cl-ppcre:split *sql-statement-separator* content)))
-    (log:debug "[CL-DBI] Applying ~A migration: ~a - ~a" direction id description)
+    (log:debug "[CL-DBI] Applying ~A migration: ~A - ~A" direction id description)
     (cl-dbi:with-transaction connection
       (dolist (statement statements)
         (let ((stmt (cl-dbi:prepare connection (string-trim #(#\Newline) statement))))
