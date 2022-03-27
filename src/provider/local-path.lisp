@@ -48,6 +48,7 @@
    :local-path-migration
    :get-file-mapping
    :sql-migration
+   :lisp-migration
    :migration-up-script-path
    :migration-down-script-path
    :provider-paths
@@ -89,6 +90,43 @@
     (log:debug "[SQL] Loading downgrade migration for id ~a from ~a" id path)
     (uiop:read-file-string path)))
 
+(defclass lisp-migration (local-path-migration)
+  ()
+  (:default-initargs
+   :kind :lisp)
+  (:documentation "Migration resource driven by a Lisp function"))
+
+(defun %load-lisp-migration (id path)
+  "Loads a Lisp migration from a given path"
+  (log:debug "[LISP] Loading migration for id ~A from ~A" id path)
+  (let* ((spec (uiop:read-file-form path))
+         (system-name (getf spec :system))
+         (package-name (getf spec :package))
+         (handler-name (getf spec :handler)))
+    (unless system-name
+      (error "No ASDF system specified for migration ~A" id))
+    (unless package-name
+      (error "No package specified for migration ~A" id))
+    (unless handler-name
+      (error "No handler specified for migration ~A" id))
+    #+quicklisp
+    (ql:quickload system-name :verbose nil :silent t)
+    #-quicklisp
+    (asdf:load-system system-name :verbose nil)
+    (unless (find-package package-name)
+      (error "Cannot find package ~A for migration ~A" package-name id))
+    (let* ((package (find-package package-name))
+           (handler-sym (find-symbol (symbol-name handler-name) package)))
+      (unless handler-sym
+        (error "Handler symbol ~A not found in package ~A for migration ~A" handler-name package id))
+      (symbol-function handler-sym))))
+
+(defmethod migration-load ((direction (eql :up)) (migration lisp-migration))
+  (%load-lisp-migration (migration-id migration) (migration-up-script-path migration)))
+
+(defmethod migration-load ((direction (eql :down)) (migration lisp-migration))
+  (%load-lisp-migration (migration-id migration) (migration-down-script-path migration)))
+
 (defgeneric get-file-mapping (provider extension)
   (:documentation "Returns the mapping associated with the given file EXTENSION"))
 
@@ -100,13 +138,14 @@
     :documentation "Local paths from which to discover migrations")
    (pattern
     :initarg :pattern
-    :initform "(\\d{14})-(.*)\.(up|down)\.(sql)$"
+    :initform "(\\d{14})-(.*)\.(up|down)\.(sql|lisp)$"
     :reader provider-scan-pattern
     :documentation "Regex pattern used to scan for migration files")
    (mappings
     :initarg :mappings
     :reader provider-file-mappings
-    :initform `((:extension "sql" :kind :sql :class ,'sql-migration))
+    :initform `((:extension "sql" :kind :sql :class ,'sql-migration)
+                (:extension "lisp" :kind :lisp :class ,'lisp-migration))
     :documentation "Mapping between migration resource files and their respective classes"))
   (:documentation "Provider for discovering migrations from a list of local paths"))
 
