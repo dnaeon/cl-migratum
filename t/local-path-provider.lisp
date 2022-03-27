@@ -63,9 +63,9 @@
            (normalized-description "my_new_migration")
            (id (make-migration-id))
            (up (provider-create-migration :up :sql *provider* id description
-                                              :content "CREATE TABLE cl_migratum_test (id INTEGER PRIMARY KEY);"))
+                                          "CREATE TABLE cl_migratum_test (id INTEGER PRIMARY KEY);"))
            (down (provider-create-migration :down :sql *provider* id description
-                                                  :content "DROP TABLE cl_migratum_test;")))
+                                            "DROP TABLE cl_migratum_test;")))
       (ok (and (numberp (migration-id up)) (numberp (migration-id down)))
           "migration id is a number")
       (ok (and (equal :sql (migration-kind up)) (equal :sql (migration-kind down)))
