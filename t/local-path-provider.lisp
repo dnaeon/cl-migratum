@@ -56,19 +56,31 @@
         "find non-existing migration"))
 
   (testing "provider-create-migration"
-    (let* ((migration (provider-create-migration *provider*
-                                                 :description "my-new-migration"
-                                                 :up "CREATE TABLE cl_migratum_test (id INTEGER PRIMARY KEY);"
-                                                 :down "DROP TABLE cl_migratum_test;")))
-      (ok (numberp (migration-id migration))
+    (let* ((description "my-new-migration")
+           (normalized-description "my_new_migration")
+           (id (make-migration-id))
+           (up (provider-create-migration :up :sql *provider* id description
+                                              :content "CREATE TABLE cl_migratum_test (id INTEGER PRIMARY KEY);"))
+           (down (provider-create-migration :down :sql *provider* id description
+                                                  :content "DROP TABLE cl_migratum_test;")))
+      (ok (and (numberp (migration-id up)) (numberp (migration-id down)))
           "migration id is a number")
-      (ok (string= "my_new_migration" (migration-description migration))
+      (ok (and (string= normalized-description (migration-description up))
+               (string= normalized-description (migration-description down)))
           "migration description matches")
-      (ok (string= "CREATE TABLE cl_migratum_test (id INTEGER PRIMARY KEY);"
-                   (migration-load :up migration))
+      (ok (string= (migration-load :up up)
+                   (format nil "-- id: ~A~
+                                ~&-- direction: UP~
+                                ~&-- description: ~A~
+                                ~2&CREATE TABLE cl_migratum_test (id INTEGER PRIMARY KEY);~%"
+                           id normalized-description))
           "upgrade script matches")
-      (ok (string= "DROP TABLE cl_migratum_test;"
-                   (migration-load :down migration))
+      (ok (string= (migration-load :down down)
+                   (format nil "-- id: ~A~
+                                ~&-- direction: DOWN~
+                                ~&-- description: ~A~
+                                ~2&DROP TABLE cl_migratum_test;~%"
+                           id normalized-description))
           "downgrade script matches")
-      (uiop:delete-file-if-exists (local-path-migration-up-script-path migration))
-      (uiop:delete-file-if-exists (local-path-migration-down-script-path migration)))))
+      (uiop:delete-file-if-exists (cl-migratum.provider.local-path:migration-up-script-path up))
+      (uiop:delete-file-if-exists (cl-migratum.provider.local-path:migration-down-script-path down)))))

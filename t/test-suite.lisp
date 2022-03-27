@@ -52,12 +52,9 @@
    :list-pending
    :apply-pending
    :revert-last
-   :apply-next)
-  (:import-from
-   :migratum.provider.local-path
-   :make-local-path-provider
-   :local-path-migration-up-script-path
-   :local-path-migration-down-script-path)
+   :apply-next
+   :make-migration-id)
+  (:import-from :migratum.provider.local-path)
   (:import-from :migratum.driver.dbi)
   (:import-from :migratum.driver.rdbms-postgresql))
 (in-package :cl-migratum.test)
@@ -92,7 +89,7 @@
         (cl-dbi:connect :sqlite3
                         :database-name (merge-pathnames (make-pathname :name "cl-migratum" :type "db")
                                                         *tmpdir*)))
-  (setf *provider* (make-local-path-provider (list *migrations-path*)))
+  (setf *provider* (cl-migratum.provider.local-path:make-provider (list *migrations-path*)))
   (setf *dbi-driver*
         (migratum.driver.dbi:make-driver *provider* *sqlite-conn*))
   (setf *rdbms-postgresql-driver*
