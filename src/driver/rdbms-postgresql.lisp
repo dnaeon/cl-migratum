@@ -63,7 +63,8 @@
   "
 CREATE TABLE IF NOT EXISTS migration (
     id BIGINT PRIMARY KEY,
-    description CHARACTER VARYING(255) NOT NULL,
+    kind CHARACTER VARYING(255) NOT NULL,
+    description CHARACTER VARYING(4096) NOT NULL,
     applied TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );"
   "Schema used by the SQL driver")
