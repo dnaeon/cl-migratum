@@ -14,6 +14,7 @@
   :source-control "https://github.com/dnaeon/cl-migratum"
   :long-name "cl-migratum.driver.rdbms-postgresql"
   :depends-on (:cl-migratum
+               :cl-migratum.driver.mixins
                :cl-ppcre
                :hu.dwim.logger
                :hu.dwim.rdbms.postgresql

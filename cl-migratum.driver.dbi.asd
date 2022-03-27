@@ -14,6 +14,7 @@
   :source-control "https://github.com/dnaeon/cl-migratum"
   :long-name "cl-migratum.driver.dbi"
   :depends-on (:cl-migratum
+               :cl-migratum.driver.mixins
                :cl-dbi
                :cl-ppcre
                :log4cl)

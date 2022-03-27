@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS migration (
 );"
   "Schema used by the SQL driver")
 
-(defclass rdbms-postgresql-driver (base-driver)
+(defclass rdbms-postgresql-driver (base-driver migratum.driver.mixins:lisp-driver-mixin)
   ((database
     :initarg :database
     :accessor database-of

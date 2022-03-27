@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS migration (
 );"
   "Schema used by the SQL driver")
 
-(defclass dbi-driver (base-driver)
+(defclass dbi-driver (base-driver migratum.driver.mixins:lisp-driver-mixin)
   ((connection
     :initarg :connection
     :accessor dbi-driver-connection
