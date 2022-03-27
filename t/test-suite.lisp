@@ -40,6 +40,7 @@
    :provider-create-migration
    :provider-find-migration-by-id
    :migration-id
+   :migration-kind
    :migration-description
    :migration-load
    :driver-name
