@@ -252,13 +252,12 @@ GROUP-MIGRATION-FILES-BY id function."
     result))
 
 (defun %write-sql-migration-file (id description direction path content)
-  (log:debug "[SQL] Creating new migration in ~a" path)
+  (log:debug "[SQL] Creating new migration in ~A" path)
   (with-open-file (out path :direction :output :if-does-not-exist :create)
     (format out "-- id: ~A~%" id)
     (format out "-- direction: ~A~%" direction)
     (format out "-- description: ~A~2%" description)
-    (when content
-      (format out "~A~%" content))))
+    (format out "~A~%" content)))
 
 (defmethod provider-create-migration ((direction (eql :up)) (kind (eql :sql))
                                       (provider local-path-provider) (id integer)
@@ -284,6 +283,58 @@ GROUP-MIGRATION-FILES-BY id function."
          (file-path (make-pathname :name name :type "sql" :directory (pathname-directory (truename provider-path)))))
     (%write-sql-migration-file id description direction file-path content)
     (make-instance 'sql-migration
+                   :id id
+                   :description description
+                   :applied nil
+                   :up-script-path nil
+                   :down-script-path file-path)))
+
+(defun %write-lisp-migration-file (id description direction path content)
+  (log:debug "[LISP] Creating new migration in ~A" path)
+  (let ((system-name (getf content :system))
+        (package-name (getf content :package))
+        (handler-name (getf content :handler)))
+    (unless system-name
+      (error "Must provide :system for Lisp migrations"))
+    (unless package-name
+      (error "Must provide :package for Lisp migrations"))
+    (unless handler-name
+      (error "Must provide :handler for Lisp migrations"))
+    (with-open-file (out path :direction :output :if-does-not-exist :create)
+      (format out ";; id: ~A~%" id)
+      (format out ";; direction: ~A~%" direction)
+      (format out ";; description: ~A~2%" description)
+      (write content :stream out :case :downcase :readably t)
+      (format out "~%"))))
+
+(defmethod provider-create-migration ((direction (eql :up)) (kind (eql :lisp))
+                                      (provider local-path-provider) (id integer)
+                                      (description string) (content list) &key)
+  (unless content
+    (error "Must provide a non-empty property list spec"))
+  (let* ((description (normalize-description description))
+         (provider-path (first (provider-paths provider)))
+         (name (format nil "~A-~A.up" id description))
+         (file-path (make-pathname :name name :type "lisp" :directory (pathname-directory (truename provider-path)))))
+    (%write-lisp-migration-file id description direction file-path content)
+    (make-instance 'lisp-migration
+                   :id id
+                   :description description
+                   :applied nil
+                   :up-script-path file-path
+                   :down-script-path nil)))
+
+(defmethod provider-create-migration ((direction (eql :down)) (kind (eql :lisp))
+                                      (provider local-path-provider) (id integer)
+                                      (description string) (content list) &key)
+  (unless content
+    (error "Must provide a non-empty property list spec"))
+  (let* ((description (normalize-description description))
+         (provider-path (first (provider-paths provider)))
+         (name (format nil "~A-~A.down" id description))
+         (file-path (make-pathname :name name :type "lisp" :directory (pathname-directory (truename provider-path)))))
+    (%write-lisp-migration-file id description direction file-path content)
+    (make-instance 'lisp-migration
                    :id id
                    :description description
                    :applied nil
