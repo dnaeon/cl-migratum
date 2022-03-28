@@ -48,7 +48,8 @@
   (:import-from :cl-ppcre)
   (:export
    :dbi-driver
-   :make-driver))
+   :make-driver
+   :dbi-driver-connection))
 (in-package :cl-migratum.driver.dbi)
 
 (defparameter *sql-statement-separator*
@@ -68,7 +69,7 @@ CREATE TABLE IF NOT EXISTS migration (
 (defclass dbi-driver (base-driver migratum.driver.mixins:lisp-driver-mixin)
   ((connection
     :initarg :connection
-    :accessor dbi-driver-connection
+    :reader dbi-driver-connection
     :initform (error "Must specify database connection")
     :documentation "CL-DBI connection to use"))
   (:documentation "Driver for performing SQL migrations"))

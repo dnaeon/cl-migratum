@@ -51,7 +51,9 @@
   (:import-from :cl-ppcre)
   (:export
    :rdbms-postgresql-driver
-   :make-driver))
+   :make-driver
+   :database-of
+   :connection-specification-of))
 (in-package :cl-migratum.driver.rdbms-postgresql)
 
 (defparameter *sql-statement-separator*
@@ -76,7 +78,7 @@ CREATE TABLE IF NOT EXISTS migration (
     :documentation "hu.dwim.rdbms database to use")
    (connection-specification
     :initarg :connection-specification
-    :accessor connection-specification-of
+    :reader connection-specification-of
     :initform (error "Must specify database connection specification")
     :documentation "Connection specification for hu.dwim.rdbms e.g. (:host \"localhost\" :port 5432 :database \"migratum\" :user-name \"migratum_user\" :password \"changeit\" :use-ssl :yes)
     Note that :host defaults to \"localhost\", :port to 5432, and :use-ssl to :no"))
