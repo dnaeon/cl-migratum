@@ -41,14 +41,16 @@
   (testing "provider-list-migrations"
     (let* ((discovered (provider-list-migrations *provider*))
            (migrations (sort discovered #'< :key #'migration-id)))
-      (ok (= 4 (length migrations)) "number of migrations matches")
-      (ok (equal (list 20200421173657 20200421173908 20200421180337 20200605144633)
+      (ok (= 5 (length migrations)) "number of migrations matches")
+      (ok (equal (list 20200421173657 20200421173908 20200421180337 20200605144633 20220327224455)
                  (mapcar #'migration-id migrations))
           "identifiers of migrations matches")
-      (ok (equal (list :sql :sql :sql :sql)
+      (ok (equal (list :sql :sql :sql :sql :lisp)
                  (mapcar #'migration-kind migrations))
           "migration kinds match")
-      (ok (equal (list "create_table_foo" "create_table_bar" "create_table_qux" "multiple_statements")
+      (ok (equal (list "create_table_foo" "create_table_bar"
+                       "create_table_qux" "multiple_statements"
+                       "lisp_code_migration")
                  (mapcar #'migration-description migrations))
           "description of migrations matches")))
 
@@ -58,9 +60,9 @@
     (ng (provider-find-migration-by-id *provider* 'no-such-id)
         "find non-existing migration"))
 
-  (testing "provider-create-migration"
-    (let* ((description "my-new-migration")
-           (normalized-description "my_new_migration")
+  (testing "provider-create-migration - :sql kind"
+    (let* ((description "my-new-sql-migration")
+           (normalized-description "my_new_sql_migration")
            (id (make-migration-id))
            (up (provider-create-migration :up :sql *provider* id description
                                           "CREATE TABLE cl_migratum_test (id INTEGER PRIMARY KEY);"))
@@ -88,4 +90,38 @@
                            id normalized-description))
           "downgrade script matches")
       (uiop:delete-file-if-exists (cl-migratum.provider.local-path:migration-up-script-path up))
-      (uiop:delete-file-if-exists (cl-migratum.provider.local-path:migration-down-script-path down)))))
+      (uiop:delete-file-if-exists (cl-migratum.provider.local-path:migration-down-script-path down))))
+
+  (testing "provider-create-migration - :lisp kind"
+    (let* ((description "my-new-lisp-migration")
+           (normalized-description "my_new_lisp_migration")
+           (id (make-migration-id))
+           (up-spec '(:system :cl-migratum.test :package :cl-migratum.test :handler :up-test-handler))
+           (down-spec '(:system :cl-migratum.test :package :cl-migratum.test :handler :down-test-handler))
+           (up (provider-create-migration :up :lisp *provider* id description up-spec))
+           (down (provider-create-migration :down :lisp *provider* id description down-spec)))
+      (ok (and (numberp (migration-id up)) (numberp (migration-id down)))
+          "migration id is a number")
+      (ok (and (equal :lisp (migration-kind up)) (equal :lisp (migration-kind down)))
+          "migration kinds match")
+      (ok (and (string= normalized-description (migration-description up))
+               (string= normalized-description (migration-description down)))
+          "migration description matches")
+      (ok (functionp (migration-load :up up))
+          "migration-load :up returns a function")
+      (ok (functionp (migration-load :down down))
+          "migration-load :down returns a function")
+      (uiop:delete-file-if-exists (cl-migratum.provider.local-path:migration-up-script-path up))
+      (uiop:delete-file-if-exists (cl-migratum.provider.local-path:migration-down-script-path down))))
+
+  (testing "provider-create-migration - invalid :lisp spec"
+    (let* ((description "my-invalid-lisp-migration")
+           (id (make-migration-id)))
+      (ok (signals (provider-create-migration :up :lisp *provider* id description nil))
+          "Signals on invalid spec - 1")
+      (ok (signals (provider-create-migration :up :lisp *provider* id description '(:foo :bar)))
+          "Signals on invalid spec - 2")
+      (ok (signals (provider-create-migration :up :lisp *provider* id description '(:system :foo)))
+          "Signals on invalid spec - 3")
+      (ok (signals (provider-create-migration :up :lisp *provider* id description '(:system :foo :package :bar)))
+          "Signals on invalid spec - 4"))))
