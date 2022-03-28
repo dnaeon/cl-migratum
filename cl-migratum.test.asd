@@ -29,11 +29,14 @@
                              (:static-file "20200421180337-create_table_qux.down.sql")
                              (:static-file "20200421180337-create_table_qux.up.sql")
                              (:static-file "20200605144633-multiple_statements.down.sql")
-                             (:static-file "20200605144633-multiple_statements.up.sql")))
+                             (:static-file "20200605144633-multiple_statements.up.sql")
+                             (:static-file "20220327224455-lisp_code_migration.down.lisp")
+                             (:static-file "20220327224455-lisp_code_migration.up.lisp")))
                (:module "tests"
                 :pathname #P"t/"
                 :depends-on ("test-migrations")
                 :components ((:file "test-suite")
+                             (:file "20220327224455-migration")
                              (:file "local-path-provider")
                              (:file "dbi-driver")
                              (:file "rdbms-postgresql-driver"))))
