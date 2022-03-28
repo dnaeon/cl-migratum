@@ -64,10 +64,10 @@
                  (mapcar #'migration-description migrations))
           "description of migrations matches")))
 
-  (testing "provider-find-migration-by-id"
-    (ok (provider-find-migration-by-id *provider* 20200421173657)
+  (testing "find-migration-by-id"
+    (ok (find-migration-by-id *provider* 20200421173657)
         "find existing migration by id")
-    (ng (provider-find-migration-by-id *provider* 'no-such-id)
+    (ng (find-migration-by-id *provider* 'no-such-id)
         "find non-existing migration"))
 
   (testing "provider-create-migration - :sql kind"

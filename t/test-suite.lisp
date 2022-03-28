@@ -38,7 +38,7 @@
    :provider-initialized
    :provider-list-migrations
    :provider-create-migration
-   :provider-find-migration-by-id
+   :find-migration-by-id
    :migration-id
    :migration-kind
    :migration-description

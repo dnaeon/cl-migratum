@@ -45,7 +45,7 @@
    :provider-name
    :provider-list-migrations
    :provider-create-migration
-   :provider-find-migration-by-id
+   :find-migration-by-id
    :base-driver
    :driver-name
    :driver-provider
@@ -137,6 +137,9 @@
 (defgeneric provider-create-migration (direction kind provider id description content &key)
   (:documentation "Creates a new migration resource using the given provider"))
 
+(defgeneric find-migration-by-id (provider id)
+  (:documentation "Returns the migration with the given id from the provider"))
+
 (defmethod provider-init ((provider base-provider) &key)
   (log:debug "Initializing provider ~a" (provider-name provider))
   (setf (provider-initialized provider) t))
@@ -144,6 +147,10 @@
 (defmethod provider-shutdown ((provider base-provider) &key)
   (log:debug "Shutting down provider ~a" (provider-name provider))
   (setf (provider-initialized provider) nil))
+
+(defmethod find-migration-by-id ((provider base-provider) id)
+  (let ((migrations (provider-list-migrations provider)))
+    (find id migrations :key #'migration-id)))
 
 (defclass base-driver ()
   ((name
@@ -170,7 +177,7 @@
 (defgeneric driver-shutdown (driver &key)
   (:documentation "Shutdowns the driver and cleans up any allocated resources"))
 
-(defgeneric driver-list-applied (driver &key)
+(defgeneric driver-list-applied (driver &key offset limit)
   (:documentation "Returns a list of the applied migrations in descending order"))
 
 (defgeneric driver-register-migration (direction driver migration &key)
@@ -178,6 +185,36 @@
 
 (defgeneric driver-apply-migration (direction kind driver migration &key)
   (:documentation "Applies the migration script using the given driver and direction"))
+
+(defgeneric latest-migration (driver)
+  (:documentation "Returns the latest applied migration"))
+
+(defgeneric contains-applied-migrations-p (driver)
+  (:documentation "Predicate for testing whether there are any applied migrations"))
+
+(defgeneric list-pending (driver)
+  (:documentation "Returns the list of migrations that have not been applied yet"))
+
+(defgeneric display-pending (driver)
+  (:documentation "Displays the pending migrations"))
+
+(defgeneric display-applied (driver &key offset limit)
+  (:documentation "Displays the applied migrations"))
+
+(defgeneric apply-and-register (driver migration)
+  (:documentation "Applies the migration and registers it"))
+
+(defgeneric apply-pending (driver)
+  (:documentation "Applies all pending migrations"))
+
+(defgeneric revert-and-unregister (driver migration)
+  (:documentation "Reverts and unregisters a given migration."))
+
+(defgeneric apply-next (driver &key count)
+  (:documentation "Apply the next COUNT of pending migrations"))
+
+(defgeneric revert-last (driver &key count)
+  (:documentation "Reverts the last COUNT applied migrations"))
 
 (defmethod driver-init ((driver base-driver) &key)
   (log:debug "Initializing driver ~a" (driver-name driver))
@@ -187,17 +224,14 @@
   (log:debug "Shutting down driver ~a" (driver-name driver))
   (setf (driver-initialized driver) nil))
 
-(defun latest-migration (driver)
-  "Returns the latest applied migration"
-  (first (driver-list-applied driver)))
+(defmethod latest-migration ((driver base-driver))
+  (first (driver-list-applied driver :offset 0 :limit 1)))
 
-(defun contains-applied-migrations-p (driver)
-  "Predicate for testing whether we have any migrations applied"
+(defmethod contains-applied-migrations-p ((driver base-driver))
   (when (latest-migration driver)
     t))
 
-(defun list-pending (driver)
-  "Returns the list of migrations that have not been applied yet"
+(defmethod list-pending ((driver base-driver))
   (let* ((latest-migration (latest-migration driver))
          (latest-migration-id (or (and latest-migration
                                        (migration-id latest-migration))
@@ -210,8 +244,7 @@
           #'<
           :key #'migration-id)))
 
-(defun display-pending (driver)
-  "Display the pending migrations in a table"
+(defmethod display-pending ((driver base-driver))
   (let ((pending (list-pending driver))
         (table (ascii-table:make-table (list "ID" "DESCRIPTION" "KIND") :header "PENDING MIGRATIONS")))
     (dolist (migration pending)
@@ -223,9 +256,8 @@
     (when pending
       (ascii-table:display table))))
 
-(defun display-applied (driver &rest rest)
-  "Displays the applied migrations in a table"
-  (let ((applied (apply #'driver-list-applied driver rest))
+(defmethod display-applied ((driver base-driver) &key offset limit)
+  (let ((applied (driver-list-applied driver :offset offset :limit limit))
         (table (ascii-table:make-table (list "ID" "DESCRIPTION" "APPLIED" "KIND") :header "APPLIED MIGRATIONS")))
     (dolist (migration applied)
       (ascii-table:add-row table (list (migration-id migration)
@@ -237,8 +269,7 @@
     (when applied
       (ascii-table:display table))))
 
-(defun apply-and-register (driver migration)
-  "Applies the migration and registers it"
+(defmethod apply-and-register ((driver base-driver) migration)
   (let ((id (migration-id migration))
         (description (migration-description migration))
         (kind (migration-kind migration)))
@@ -246,41 +277,31 @@
     (driver-apply-migration :up kind driver migration)
     (driver-register-migration :up driver migration)))
 
-(defun apply-pending (driver)
-  "Applies the pending migrations"
+(defmethod apply-pending ((driver base-driver))
   (let ((pending (list-pending driver)))
     (log:info "Found ~a pending migration(s) to be applied" (length pending))
     (dolist (migration pending)
       (apply-and-register driver migration))))
 
-(defun provider-find-migration-by-id (provider id)
-  "Returns the migration with the given id from the provider"
-  (let ((migrations (provider-list-migrations provider)))
-    (find id migrations :key #'migration-id)))
-
-(defun revert-and-unregister (driver migration)
-  "Reverts and unregisters a given migration.
-The migration to be reverted is first loaded via the
-driver provider, in order to ensure we can load the
-downgrade script."
+(defmethod revert-and-unregister ((driver base-driver) migration)
+  "The migration to be reverted is first loaded via the driver
+provider, in order to ensure we can load the downgrade script."
   (let* ((id (migration-id migration))
          (description (migration-description migration))
          (kind (migration-kind migration))
          (provider (driver-provider driver))
-         (to-revert (provider-find-migration-by-id provider id)))
+         (to-revert (find-migration-by-id provider id)))
     (log:info "Reverting migration ~A - ~A (~A)" id description kind)
     (driver-apply-migration :down kind driver to-revert)
     (driver-register-migration :down driver to-revert)))
 
-(defun apply-next (driver &key (count 1))
-  "Apply the next COUNT of pending migrations"
+(defmethod apply-next ((driver base-driver) &key (count 1))
   (let* ((pending (list-pending driver))
          (to-apply (take count pending)))
     (dolist (migration to-apply)
       (apply-and-register driver migration))))
 
-(defun revert-last (driver &key (count 1))
-  "Reverts the last COUNT applied migrations"
+(defmethod revert-last ((driver base-driver) &key (count 1))
   (let* ((applied (driver-list-applied driver))
          (to-revert (take count applied)))
     (dolist (item to-revert)
