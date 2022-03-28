@@ -25,6 +25,16 @@
 
 (in-package :cl-migratum.test)
 
+(defun test-up-handler (driver)
+  "Test upgrade handler"
+  (declare (ignore driver))
+  :performing-upgrade)
+
+(defun test-down-handler (driver)
+  "Test downgrade handler"
+  (declare (ignore driver))
+  :performing-downgrade)
+
 (deftest local-path-provider
   (testing "provider-name"
     (ok (string= "local-path" (provider-name *provider*))
@@ -96,8 +106,8 @@
     (let* ((description "my-new-lisp-migration")
            (normalized-description "my_new_lisp_migration")
            (id (make-migration-id))
-           (up-spec '(:system :cl-migratum.test :package :cl-migratum.test :handler :up-test-handler))
-           (down-spec '(:system :cl-migratum.test :package :cl-migratum.test :handler :down-test-handler))
+           (up-spec '(:system :cl-migratum.test :package :cl-migratum.test :handler :test-up-handler))
+           (down-spec '(:system :cl-migratum.test :package :cl-migratum.test :handler :test-down-handler))
            (up (provider-create-migration :up :lisp *provider* id description up-spec))
            (down (provider-create-migration :down :lisp *provider* id description down-spec)))
       (ok (and (numberp (migration-id up)) (numberp (migration-id down)))

@@ -81,7 +81,7 @@
   "RMDBS-POSTGRESQL upgrade handler for migration id 20220327224455"
   (let ((db (cl-migratum.driver.rdbms-postgresql:database-of driver))
         (schema *table-schema*)
-        (populate-stmt "INSERT INTO lisp_code_table (name, value) VALUES (~A, '~A', ~A)"))
+        (populate-stmt "INSERT INTO lisp_code_table (id, name, value) VALUES (~A, '~A', ~A)"))
     (hu.dwim.rdbms:with-database db
       ;; Create the schema and populate it with some data
       (hu.dwim.rdbms:with-transaction
