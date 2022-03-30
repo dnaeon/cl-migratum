@@ -54,7 +54,6 @@
                         :description "migration driver to use"
                         :short-name #\d
                         :long-name "driver"
-                        :required t
                         :items '(("dbi" . :dbi)
                                  ("rdbms-pgsql" . :rdbms-pgsql))
                         :env-vars '("MIGRATUM_DRIVER")
@@ -63,7 +62,6 @@
                         :description "migration resource provider to use"
                         :short-name #\p
                         :long-name "provider"
-                        :required t
                         :items '(("local-path" . :local-path))
                         :key :provider/kind
                         :env-vars '("MIGRATUM_PROVIDER"))
