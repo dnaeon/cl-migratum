@@ -27,10 +27,9 @@
 
 (defun applied/handler (cmd)
   "The handler for the `applied' command"
-  (let* ((driver-kind (clingon:getopt cmd :driver/kind))
-         (driver (get-driver driver-kind cmd))
-         (offset (clingon:getopt cmd :applied-cmd/offset))
-         (limit (clingon:getopt cmd :applied-cmd/limit)))
+  (let ((driver (get-driver :infer cmd))
+        (offset (clingon:getopt cmd :applied-cmd/offset))
+        (limit (clingon:getopt cmd :applied-cmd/limit)))
     (cl-migratum:display-applied driver :offset offset :limit limit)))
 
 (defun applied/options ()

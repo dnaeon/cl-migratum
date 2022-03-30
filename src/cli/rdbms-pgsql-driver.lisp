@@ -35,7 +35,7 @@
       (error "RDMBS-PGSQL: No database name specified"))
     (unless db-user
       (error "RDBMS-PGSQL: No database username specified"))
-    (let* ((provider (get-provider (clingon:getopt command :provider/kind) command))
+    (let* ((provider (get-provider :infer command))
            (spec (list :host db-host
                        :database db-name
                        :user-name db-user

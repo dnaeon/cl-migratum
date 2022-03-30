@@ -27,8 +27,7 @@
 
 (defun migrate/handler (cmd)
   "The handler for the `migrate' command"
-  (let* ((driver-kind (clingon:getopt cmd :driver/kind))
-         (driver (get-driver driver-kind cmd)))
+  (let ((driver (get-driver :infer cmd)))
     (cl-migratum:apply-pending driver)))
 
 (defun migrate/command ()
