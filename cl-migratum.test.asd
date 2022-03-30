@@ -5,7 +5,7 @@
 (defsystem "cl-migratum.test"
   :name "cl-migratum.test"
   :description "Test suite for cl-migratum"
-  :version "0.3.0"
+  :version "0.5.3"
   :author "Marin Atanasov Nikolov <dnaeon@gmail.com>"
   :maintainer "Marin Atanasov Nikolov <dnaeon@gmail.com>"
   :license "BSD 2-Clause"

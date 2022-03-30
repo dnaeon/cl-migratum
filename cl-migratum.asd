@@ -5,7 +5,7 @@
 (defsystem "cl-migratum"
   :name "cl-migratum"
   :description "Database schema migration system for Common Lisp"
-  :version "0.5.0"
+  :version "0.5.3"
   :author "Marin Atanasov Nikolov <dnaeon@gmail.com>"
   :maintainer "Marin Atanasov Nikolov <dnaeon@gmail.com>"
   :license "BSD 2-Clause"

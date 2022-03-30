@@ -5,7 +5,7 @@
 (defsystem "cl-migratum.driver.dbi"
   :name "cl-migratum.driver.dbi"
   :description "cl-migratum driver for driving migrations against SQL databases using CL-DBI"
-  :version "0.3.0"
+  :version "0.3.3"
   :author "Marin Atanasov Nikolov <dnaeon@gmail.com>"
   :maintainer "Marin Atanasov Nikolov <dnaeon@gmail.com>"
   :license "BSD-2 Clause"

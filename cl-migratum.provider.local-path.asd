@@ -5,7 +5,7 @@
 (defsystem "cl-migratum.provider.local-path"
   :name "cl-migratum.provider.local-path"
   :description "cl-migratum provider for migration resources discovered from local path"
-  :version "0.3.0"
+  :version "0.3.3"
   :author "Marin Atanasov Nikolov <dnaeon@gmail.com>"
   :maintainer "Marin Atanasov Nikolov <dnaeon@gmail.com>"
   :license "BSD-2 Clause"
