@@ -7,3 +7,6 @@
 *.FASL
 *.fasl
 *.lisp-temp
+
+# binaries
+bin/migratum
