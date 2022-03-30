@@ -62,7 +62,8 @@
    :apply-pending
    :contains-applied-migrations-p
    :apply-next
-   :revert-last))
+   :revert-last
+   :reset))
 (in-package :cl-migratum.core)
 
 (defgeneric migration-id (migration)
@@ -216,6 +217,9 @@
 (defgeneric revert-last (driver &key count)
   (:documentation "Reverts the last COUNT applied migrations"))
 
+(defgeneric reset (driver)
+  (:documentation "Resets the database by reverting all migrations and re-applying them again"))
+
 (defmethod driver-init ((driver base-driver) &key)
   (log:debug "Initializing driver ~a" (driver-name driver))
   (setf (driver-initialized driver) t))
@@ -306,3 +310,8 @@ provider, in order to ensure we can load the downgrade script."
          (to-revert (take count applied)))
     (dolist (item to-revert)
       (revert-and-unregister driver item))))
+
+(defmethod reset ((driver base-driver))
+  (loop :while (contains-applied-migrations-p driver) :do
+    (revert-last driver))
+  (apply-pending driver))
