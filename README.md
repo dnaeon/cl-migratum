@@ -8,19 +8,28 @@ migrations](https://en.wikipedia.org/wiki/Schema_migration).
 
 * [Quicklisp](https://www.quicklisp.org/beta/)
 
+## Systems
+
+The following systems are available as part of this repo.
+
+| System                                | Description                                         |
+|---------------------------------------|-----------------------------------------------------|
+| `cl-migratum`                         | Core system                                         |
+| `cl-migratum.provider.local-path`     | Provider which discovers migrations from local-path |
+| `cl-migratum.driver.dbi`              | `cl-dbi` database driver                            |
+| `cl-migratum.driver.rmdbs-postgresql` | PostgreSQL driver based on `hu.dwim.rdbms`          |
+| `cl-migratum.driver.mixins`           | Various mixin classes used by drivers               |
+| `cl-migratum.test`                    | Test suite for `cl-migratum`                        |
+
 ## Installation
+
+Latest development version can be installed from the Git repo.
 
 Clone the [cl-migratum](https://github.com/dnaeon/cl-migratum) repo in your
 [Quicklisp local-projects directory](https://www.quicklisp.org/beta/faq.html).
 
 ``` shell
 git clone https://github.com/dnaeon/cl-migratum.git
-```
-
-Load the system.
-
-``` shell
-CL-USER> (ql:quickload :cl-migratum)
 ```
 
 ## Concepts
@@ -37,15 +46,14 @@ required scripts that can be used to upgrade and/or downgrade the
 database.
 
 Migration resources are discovered via `providers` and are being
-used by `drivers` during the process of upgrade/downgrade of the
-schema.
+used by `drivers` during the upgrade or downgrade process.
 
 ### Provider
 
 The `provider` is responsible for discovering migration resources.
 
-For example a provider can discover migrations from local path by
-scanning files that match a given pattern or fetch migrations from
+For example a provider can discover migrations from a local path by
+scanning for files that match a given pattern or fetch migrations from
 a remote endpoint (e.g. HTTP service).
 
 The `provider` is also responsible for creating new migration
@@ -59,32 +67,42 @@ The following providers are supported by `cl-migratum`.
 
 ### Driver
 
-The `driver` carries out the communication with the
-database against which schema changes will be applied.
+The `driver` carries out the communication with the database against
+which schema changes will be applied.
 
 It is responsible for applying schema changes, registering
-successfully applied migrations and unregistering them when
-reverting back to a previous state.
+successfully applied migrations and unregistering them when reverting
+back to a previous state.
 
-A `driver` uses a `provider` in order to discover `migrations`, which
-can be applied against the database it is connected to.
+A `driver` internally uses a `provider` in order to discover
+`migrations`, which can be applied against the database it is
+connected to.
 
-The following drivers are supported by `cl-migratum`.
+The following drivers are currently supported by `cl-migratum`.
 
-| Name  | Description                                                                                                        | System                   |
-|-------|--------------------------------------------------------------------------------------------------------------------|--------------------------|
-| `dbi` | Driver for performing schema migrations against a SQL database using [CL-DBI](https://github.com/fukamachi/cl-dbi) | `cl-migratum.driver.dbi` |
+| Name               | Description                                                                                                               | System                                |
+|--------------------|---------------------------------------------------------------------------------------------------------------------------|---------------------------------------|
+| `dbi`              | Driver for performing schema migrations against a SQL database using [CL-DBI](https://github.com/fukamachi/cl-dbi)        | `cl-migratum.driver.dbi`              |
 | `rdbms-postgresql` | Driver for performing schema migrations against a SQL database using [hu.dwim.rdbms](http://dwim.hu/darcs/hu.dwim.rdbms/) | `cl-migratum.driver.rdbms-postgresql` |
 
 ## Usage
 
 The following section contains some examples to get you started.
 
+In order to use `cl-migratum` you will need to load the core system,
+along with any `provider` and `driver` systems.
+
+Load the core system.
+
+``` shell
+CL-USER> (ql:quickload :cl-migratum)
+```
+
 ### Create Provider
 
-First, we will create a new `provider` that can discover migration files from a
-local path. In order to create a `local-path` provider we need to load the
-system for the respective provider.
+First, we will create a new `provider` that can discover migration
+files from a local path. In order to create a `local-path` provider we
+need to load the respective system.
 
 ``` common-lisp
 CL-USER> (ql:quickload :cl-migratum.provider.local-path)
@@ -105,16 +123,28 @@ multiple paths, for each environment respectively.
 
 ``` common-lisp
 CL-USER> (defparameter *provider*
-           (migratum.provider.local-path:make-local-path-provider (list #P"~/Projects/lisp/cl-migratum/t/migrations/")))
+           (migratum.provider.local-path:make-provider (list #P"/path/to/cl-migratum/t/migrations/")))
 *PROVIDER*
 ```
 
-The `LOCAL-PATH-PROVIDER` discovers migration files which match the following pattern.
+The `LOCAL-PATH-PROVIDER` discovers migration files which match the
+following pattern.
 
-| Pattern                       | Description      |
-|-------------------------------|------------------|
-| `<id>-<description>.up.sql`   | Upgrade script   |
-| `<id>-<description>.down.sql` | Downgrade script |
+| Pattern                          | Description      |
+|----------------------------------|------------------|
+| `<id>-<description>.up.<kind>`   | Upgrade script   |
+| `<id>-<description>.down.<kind>` | Downgrade script |
+
+In above pattern `<id>` is a monotonically increasing integer, which
+represents the timestamp the migration has been created. The format of
+`<id>` is `YYYYMMDDHHMMSS`.
+
+The supported migration kinds by `LOCAL-PATH-PROVIDER` are these.
+
+| Extension | Kind    | Description                                      |
+|-----------|---------|--------------------------------------------------|
+| `.sql`    | `:sql`  | SQL migration resource                           |
+| `.lisp`   | `:lisp` | Migration resource which invokes a Lisp function |
 
 A provider can optionally be initialized, which can be done using the
 `MIGRATUM:PROVIDER-INIT` generic function. Not all providers would
@@ -122,33 +152,35 @@ require initialization, but some will and therefore it is good that
 you always initialize them first.
 
 In order to list the migrations provided by a `provider` you can use
-the `MIGRATUM:PROVIDER-LIST-MIGRATIONS` generic function, e.g.
+the `MIGRATUM:PROVIDER-LIST-MIGRATIONS` function, e.g.
 
 ``` common-lisp
 CL-USER> (migratum:provider-list-migrations *provider*)
-(#<CL-MIGRATUM.PROVIDER.LOCAL-PATH:LOCAL-PATH-MIGRATION {100527E5D3}>
- #<CL-MIGRATUM.PROVIDER.LOCAL-PATH:LOCAL-PATH-MIGRATION {100527E673}>
- #<CL-MIGRATUM.PROVIDER.LOCAL-PATH:LOCAL-PATH-MIGRATION {100527E713}>)
+(#<CL-MIGRATUM.PROVIDER.LOCAL-PATH:LISP-MIGRATION {1004713F73}>
+ #<CL-MIGRATUM.PROVIDER.LOCAL-PATH:SQL-MIGRATION {1004603BE3}>
+ #<CL-MIGRATUM.PROVIDER.LOCAL-PATH:SQL-MIGRATION {1004603B03}>
+ #<CL-MIGRATUM.PROVIDER.LOCAL-PATH:SQL-MIGRATION {10046039B3}>
+ #<CL-MIGRATUM.PROVIDER.LOCAL-PATH:SQL-MIGRATION {1004603733}>)
 ```
 
 The following generic functions can be used to interact with
 discovered migrations.
 
-| Method                                | Description                                             |
-|---------------------------------------|---------------------------------------------------------|
-| `MIGRATUM:MIGRATION-ID`               | Returns the unique migration id                         |
-| `MIGRATUM:MIGRATION-DESCRIPTION`      | Returns the description of the migration                |
-| `MIGRATUM:MIGRATION-APPLIED`          | Returns the timestamp of when the migration was applied |
-| `MIGRATUM:MIGRATION-LOAD-UP-SCRIPT`   | Returns the upgrade script of the migration             |
-| `MIGRATUM:MIGRATION-LOAD-DOWN-SCRIPT` | Returns the downgrade script of the migration           |
+| Method                           | Description                                                   |
+|----------------------------------|---------------------------------------------------------------|
+| `MIGRATUM:MIGRATION-ID`          | Returns the unique migration id                               |
+| `MIGRATUM:MIGRATION-DESCRIPTION` | Returns the description of the migration                      |
+| `MIGRATUM:MIGRATION-APPLIED`     | Returns the timestamp of when the migration was applied       |
+| `MIGRATUM:MIGRATION-LOAD`        | Loads the `:up` or `:down` migration                          |
+| `MIGRATUM:MIGRATION-KIND`        | Returns the kind of the migration, e.g. `:sql`, `:lisp`, etc. |
 
-For example in order to collect the unique IDs of migration resources you can
-evaluate the following expression.
+For example in order to collect the unique IDs of all migration
+resources you can evaluate the following while at the REPL.
 
 ``` common-lisp
 CL-USER> (mapcar #'migratum:migration-id
                  (migratum:provider-list-migrations *provider*))
-(20200421180337 20200421173908 20200421173657)
+(20200421180337 20200421173908 20200421173657 ...)
 ```
 
 ### Create Driver
@@ -168,11 +200,11 @@ CL-USER> (ql:quickload :cl-migratum.driver.dbi)
 
 The `dbi` driver uses [CL-DBI](https://github.com/fukamachi/cl-dbi)
 interface to communicate with the database, so we will need to create
-a database connection.
+a database connection in order to initialize it.
 
 ``` common-lisp
 CL-USER> (defparameter *conn*
-           (dbi:connect :sqlite3 :database-name "/Users/dnaeon/cl-migratum.db"))
+           (dbi:connect :sqlite3 :database-name "/path/to/migratum.db"))
 *CONN*
 ```
 
@@ -231,9 +263,11 @@ use the `MIGRATUM:LIST-PENDING` function, e.g.
 
 ``` common-lisp
 CL-USER> (migratum:list-pending *driver*)
-(#<CL-MIGRATUM.PROVIDER.LOCAL-PATH:LOCAL-PATH-MIGRATION {10052A0583}>
- #<CL-MIGRATUM.PROVIDER.LOCAL-PATH:LOCAL-PATH-MIGRATION {10052A0623}>
- #<CL-MIGRATUM.PROVIDER.LOCAL-PATH:LOCAL-PATH-MIGRATION {10052A06C3}>)
+(#<CL-MIGRATUM.PROVIDER.LOCAL-PATH:SQL-MIGRATION {100363DFC3}>
+ #<CL-MIGRATUM.PROVIDER.LOCAL-PATH:SQL-MIGRATION {100363E0A3}>
+ #<CL-MIGRATUM.PROVIDER.LOCAL-PATH:SQL-MIGRATION {100363E183}>
+ #<CL-MIGRATUM.PROVIDER.LOCAL-PATH:SQL-MIGRATION {100363E263}>
+ #<CL-MIGRATUM.PROVIDER.LOCAL-PATH:LISP-MIGRATION {100363E343}>)
 ```
 
 Or, we can display a table of the pending migrations using the
@@ -241,17 +275,19 @@ Or, we can display a table of the pending migrations using the
 
 ``` common-lisp
 CL-USER> (migratum:display-pending *driver*)
-.-----------------------------------.
-|        PENDING MIGRATIONS         |
-+----------------+------------------+
-| ID             | DESCRIPTION      |
-+----------------+------------------+
-| 20200421173657 | create_table_foo |
-| 20200421173908 | create_table_bar |
-| 20200421180337 | create_table_qux |
-+----------------+------------------+
-| TOTAL          |                3 |
-+----------------+------------------+
+.---------------------------------------------.
+|             PENDING MIGRATIONS              |
++----------------+---------------------+------+
+| ID             | DESCRIPTION         | KIND |
++----------------+---------------------+------+
+| 20200421173657 | create_table_foo    | SQL  |
+| 20200421173908 | create_table_bar    | SQL  |
+| 20200421180337 | create_table_qux    | SQL  |
+| 20200605144633 | multiple_statements | SQL  |
+| 20220327224455 | lisp_code_migration | LISP |
++----------------+---------------------+------+
+|                | TOTAL               |    5 |
++----------------+---------------------+------+
 NIL
 ```
 
@@ -268,14 +304,18 @@ This is how we can apply all pending migrations for example.
 
 ``` common-lisp
 CL-USER> (migratum:apply-pending *driver*)
- <INFO> [18:10:14] cl-migratum.core core.lisp (apply-pending) -
-  Found 3 pending migration(s) to be applied
- <INFO> [18:10:14] cl-migratum.core core.lisp (apply-and-register) -
-  Applying migration 20200421173657 - create_table_foo
- <INFO> [18:10:14] cl-migratum.core core.lisp (apply-and-register) -
-  Applying migration 20200421173908 - create_table_bar
- <INFO> [18:10:14] cl-migratum.core core.lisp (apply-and-register) -
-  Applying migration 20200421180337 - create_table_qux
+ <INFO> [21:20:51] cl-migratum.core core.lisp (apply-pending base-driver) -
+  Found 5 pending migration(s) to be applied
+ <INFO> [21:20:51] cl-migratum.core core.lisp (apply-and-register base-driver) -
+  Applying migration 20200421173657 - create_table_foo (SQL)
+ <INFO> [21:20:51] cl-migratum.core core.lisp (apply-and-register base-driver) -
+  Applying migration 20200421173908 - create_table_bar (SQL)
+ <INFO> [21:20:51] cl-migratum.core core.lisp (apply-and-register base-driver) -
+  Applying migration 20200421180337 - create_table_qux (SQL)
+ <INFO> [21:20:51] cl-migratum.core core.lisp (apply-and-register base-driver) -
+  Applying migration 20200605144633 - multiple_statements (SQL)
+ <INFO> [21:20:51] cl-migratum.core core.lisp (apply-and-register base-driver) -
+  Applying migration 20220327224455 - lisp_code_migration (LISP)
 NIL
 ```
 
@@ -286,7 +326,7 @@ applied migration, e.g.
 
 ``` common-lisp
 CL-USER> (migratum:migration-id (migratum:latest-migration *driver*))
-20200421180337
+20220327224455 (45 bits, #x1263E96BE487)
 ```
 
 The `MIGRATUM:CONTAINS-APPLIED-MIGRATIONS-P` predicate can be used to
@@ -311,26 +351,30 @@ This is how we can get the list of applied migrations.
 
 ``` common-lisp
 CL-USER> (migratum:driver-list-applied *driver*)
-(#<CL-MIGRATUM.CORE:MIGRATION {1006095B23}>
- #<CL-MIGRATUM.CORE:MIGRATION {1006095B73}>
- #<CL-MIGRATUM.CORE:MIGRATION {1006095BC3}>)
+(#<CL-MIGRATUM.CORE:BASE-MIGRATION {1002175993}>
+ #<CL-MIGRATUM.CORE:BASE-MIGRATION {10021759D3}>
+ #<CL-MIGRATUM.CORE:BASE-MIGRATION {1002175A13}>
+ #<CL-MIGRATUM.CORE:BASE-MIGRATION {1002175A53}>
+ #<CL-MIGRATUM.CORE:BASE-MIGRATION {1002175A93}>)
 ```
 
 Or we can display a nice table of the applied migrations instead.
 
 ``` common-lisp
 CL-USER> (migratum:display-applied *driver*)
-.---------------------------------------------------------.
-|                   APPLIED MIGRATIONS                    |
-+----------------+------------------+---------------------+
-| ID             | DESCRIPTION      | APPLIED             |
-+----------------+------------------+---------------------+
-| 20200421180337 | create_table_qux | 2020-04-21 15:17:46 |
-| 20200421173908 | create_table_bar | 2020-04-21 15:14:13 |
-| 20200421173657 | create_table_foo | 2020-04-21 15:12:52 |
-+----------------+------------------+---------------------+
-|                | TOTAL            |                   3 |
-+----------------+------------------+---------------------+
+.-------------------------------------------------------------------.
+|                        APPLIED MIGRATIONS                         |
++----------------+---------------------+---------------------+------+
+| ID             | DESCRIPTION         | APPLIED             | KIND |
++----------------+---------------------+---------------------+------+
+| 20220327224455 | lisp_code_migration | 2022-03-29 18:20:53 | LISP |
+| 20200605144633 | multiple_statements | 2022-03-29 18:20:51 | SQL  |
+| 20200421180337 | create_table_qux    | 2022-03-29 18:20:51 | SQL  |
+| 20200421173908 | create_table_bar    | 2022-03-29 18:20:51 | SQL  |
+| 20200421173657 | create_table_foo    | 2022-03-29 18:20:51 | SQL  |
++----------------+---------------------+---------------------+------+
+|                |                     | TOTAL               |    5 |
++----------------+---------------------+---------------------+------+
 NIL
 ```
 
@@ -353,7 +397,7 @@ Or if you want to skip the first ten migrations, you can evaluate
 this expression instead.
 
 ``` common-lisp
-CL-USER> (migratum.display-applied *driver* :offset 10 :limit 10)
+CL-USER> (migratum:display-applied *driver* :offset 10 :limit 10)
 ```
 
 ### Stepping through migrations
@@ -374,17 +418,19 @@ Consider the following pending migrations.
 
 ``` common-lisp
 CL-USER> (migratum:display-pending *driver*)
-.-----------------------------------.
-|        PENDING MIGRATIONS         |
-+----------------+------------------+
-| ID             | DESCRIPTION      |
-+----------------+------------------+
-| 20200421173657 | create_table_foo |
-| 20200421173908 | create_table_bar |
-| 20200421180337 | create_table_qux |
-+----------------+------------------+
-| TOTAL          |                3 |
-+----------------+------------------+
+.---------------------------------------------.
+|             PENDING MIGRATIONS              |
++----------------+---------------------+------+
+| ID             | DESCRIPTION         | KIND |
++----------------+---------------------+------+
+| 20200421173657 | create_table_foo    | SQL  |
+| 20200421173908 | create_table_bar    | SQL  |
+| 20200421180337 | create_table_qux    | SQL  |
+| 20200605144633 | multiple_statements | SQL  |
+| 20220327224455 | lisp_code_migration | LISP |
++----------------+---------------------+------+
+|                | TOTAL               |    5 |
++----------------+---------------------+------+
 NIL
 ```
 
@@ -392,16 +438,24 @@ We can apply them one by one and verify them as we go.
 
 ``` common-lisp
 CL-USER> (migratum:apply-next *driver*)
- <INFO> [20:04:25] cl-migratum.core core.lisp (apply-and-register) -
-  Applying migration 20200421173657 - create_table_foo
+ <INFO> [21:25:45] cl-migratum.core core.lisp (apply-and-register base-driver) -
+  Applying migration 20200421173657 - create_table_foo (SQL)
 NIL
 CL-USER> (migratum:apply-next *driver*)
- <INFO> [20:04:28] cl-migratum.core core.lisp (apply-and-register) -
-  Applying migration 20200421173908 - create_table_bar
+ <INFO> [21:25:47] cl-migratum.core core.lisp (apply-and-register base-driver) -
+  Applying migration 20200421173908 - create_table_bar (SQL)
 NIL
 CL-USER> (migratum:apply-next *driver*)
- <INFO> [20:04:29] cl-migratum.core core.lisp (apply-and-register) -
-  Applying migration 20200421180337 - create_table_qux
+ <INFO> [21:25:48] cl-migratum.core core.lisp (apply-and-register base-driver) -
+  Applying migration 20200421180337 - create_table_qux (SQL)
+NIL
+CL-USER> (migratum:apply-next *driver*)
+ <INFO> [21:25:49] cl-migratum.core core.lisp (apply-and-register base-driver) -
+  Applying migration 20200605144633 - multiple_statements (SQL)
+NIL
+CL-USER> (migratum:apply-next *driver*)
+ <INFO> [21:25:50] cl-migratum.core core.lisp (apply-and-register base-driver) -
+  Applying migration 20220327224455 - lisp_code_migration (LISP)
 NIL
 ```
 
@@ -410,49 +464,103 @@ If we want to revert the last three migrations we can use the
 
 ``` common-lisp
 CL-USER> (migratum:revert-last *driver* :count 3)
- <INFO> [20:06:00] cl-migratum.core core.lisp (revert-and-unregister) -
-  Reverting migration 20200421180337 - create_table_qux
- <INFO> [20:06:00] cl-migratum.core core.lisp (revert-and-unregister) -
-  Reverting migration 20200421173908 - create_table_bar
- <INFO> [20:06:00] cl-migratum.core core.lisp (revert-and-unregister) -
-  Reverting migration 20200421173657 - create_table_foo
+ <INFO> [21:26:14] cl-migratum.core core.lisp (revert-and-unregister base-driver) -
+  Reverting migration 20220327224455 - lisp_code_migration (LISP)
+ <INFO> [21:26:14] cl-migratum.core core.lisp (revert-and-unregister base-driver) -
+  Reverting migration 20200605144633 - multiple_statements (SQL)
+ <INFO> [21:26:14] cl-migratum.core core.lisp (revert-and-unregister base-driver) -
+  Reverting migration 20200421180337 - create_table_qux (SQL)
+NIL
+```
+
+Now, we should have 3 pending migrations again.
+
+``` common-lisp
+CL-USER> (migratum:display-pending *driver*)
+.---------------------------------------------.
+|             PENDING MIGRATIONS              |
++----------------+---------------------+------+
+| ID             | DESCRIPTION         | KIND |
++----------------+---------------------+------+
+| 20200421180337 | create_table_qux    | SQL  |
+| 20200605144633 | multiple_statements | SQL  |
+| 20220327224455 | lisp_code_migration | LISP |
++----------------+---------------------+------+
+|                | TOTAL               |    3 |
++----------------+---------------------+------+
 NIL
 ```
 
 ### Creating New Migrations
 
 The `MIGRATUM:PROVIDER-CREATE-MIGRATION` generic function creates a
-new migration sequence, when supported by the provider that you are
-using.
+new migration sequence. The arguments it expects are the `direction`
+(e.g. `:up` or `:down`), the migration `kind` (e.g. `:sql`, `:lisp`,
+etc.), an instance of a `provider`, `id`, `description` and `content`.
 
-Here's one example of creating a new migration, which also specifies
-the upgrade and downgrade scripts as part of the keyword parameters.
+#### SQL migrations
 
-``` common-lisp
-CL-USER> (defparameter *migration*
-           (migratum:provider-create-migration *provider*
-                                               :description "create table fubar"
-                                               :up "CREATE TABLE fubar (id INTEGER PRIMARY KEY);"
-                                               :down "DROP TABLE fubar;"))
-*MIGRATION*
-```
-
-We can also inspect the newly created migration, e.g.
+Here's an example of using the `LOCAL-PATH` provider for creating a
+new SQL migration.
 
 ``` common-lisp
-CL-USER> (migratum:migration-id *migration*)
-20200421201406
-CL-USER> (migratum:migration-description *migration*)
-"create_table_fubar"
-CL-USER> (migratum:migration-load-up-script *migration*)
-"CREATE TABLE fubar (id INTEGER PRIMARY KEY);"
-CL-USER> (migratum:migration-load-down-script *migration*)
-"DROP TABLE fubar;"
+CL-USER> (defparameter *migration-id* (migratum:make-migration-id))
+*MIGRATION-ID*
+CL-USER>
+CL-USER> (migratum:provider-create-migration
+          :up            ;; <- direction
+          :sql           ;; <- kind
+          *provider*     ;; <- provider
+          *migration-id* ;; <- the migration id
+          "fubar"        ;; <- description
+          "CREATE ...")  ;; <- contents
+#<CL-MIGRATUM.PROVIDER.LOCAL-PATH:SQL-MIGRATION {1009570AD3}>
 ```
 
-### Multiple Statements
+The downgrade migration is created in a similar way. Simply use the
+`:down` direction and the appropriate contents for it. Also, make sure
+that the description and id are the same when creating a pair of
+upgrade/downgrade migrations.
 
-If you need to run multiple statements when using the `dbi` or
+#### Lisp migrations
+
+The `:lisp` migration kind allows invoking a handler, which performs
+the upgrade and downgrade.
+
+The handler is a regular Lisp function, which accepts a single
+argument that is an instance of a `driver`.
+
+In order to create a `:lisp` migration you need to create a spec,
+which specifies the Common Lisp `system`, `package`, `upgrade` and
+`downgrade` handler.
+
+Here's an example of a spec, which is a regular property list.
+
+``` common-lisp
+(:system :my-system :package :my-system.package :handler :upgrade-handler)
+```
+
+And here's a full example of creating an `:up` and `:down` migration.
+
+``` common-lisp
+CL-USER> (let ((id (migratum:make-migration-id))
+               (desc "my lisp migration")
+               (up-spec '(:system :my-system
+                          :package :my-system.package
+                          :handler :upgrade-handler))
+               (down-spec '(:system :my-system
+                            :package :my-system.package
+                            :handler :downgrade-handler)))
+           (values
+            (migratum:provider-create-migration :up :lisp *provider* id desc up-spec)
+            (migratum:provider-create-migration :down :lisp *provider* id desc down-spec)))
+#<CL-MIGRATUM.PROVIDER.LOCAL-PATH:LISP-MIGRATION {100A39C083}>
+#<CL-MIGRATUM.PROVIDER.LOCAL-PATH:LISP-MIGRATION {100A39D6C3}>
+```
+
+### Multiple SQL Statements
+
+If you need to run multiple SQL statements when using the `dbi` or
 `rdbms-postgresql` driver you can separate each statement in the
 migration using the `--;;` separator.
 
@@ -493,16 +601,16 @@ CL-USER> (migratum:driver-shutdown *driver*)
 Generally new migration resources will be implemented along with a
 `provider`, which discovers them.
 
-You can implement a new migration resource by subclassing the
+You can implement a new migration resource by inheriting from the
 `MIGRATUM:BASE-MIGRATION` class.
 
 The following generic functions should be implemented on the newly
 defined class.
 
-| Method                                | Description                  |
-|---------------------------------------|------------------------------|
-| `MIGRATUM:MIGRATION-LOAD-UP-SCRIPT`   | Returns the upgrade script   |
-| `MIGRATUM:MIGRATION-LOAD-DOWN-SCRIPT` | Returns the downgrade script |
+| Method                    | Description                         |
+|---------------------------|-------------------------------------|
+| `MIGRATUM:MIGRATION-LOAD` | Loads the `:up` and `:down` scripts |
+| `MIGRATUM:MIGRATION-KIND` | Returns the kind of the migration   |
 
 The following generic functions can be overriden, if needed.
 
@@ -535,10 +643,10 @@ HTTP server might look like this. The following code uses
     :documentation "URL to the downgrade script"))
   (:documentation "HTTP migration resource"))
 
-(defmethod migration-load-up-script ((migration http-migration) &key)
+(defmethod migration-load ((direction (eql :up)) (migration http-migration))
   (http-get (http-migration-up-script-url migration)))
 
-(defmethod migration-load-down-script ((migration http-migration) &key)
+(defmethod migration-load ((direction (eql :down)) (migration http-migration))
   (http-get (http-migration-down-script-url migration)))
 ```
 
@@ -558,7 +666,7 @@ implemented by using your own provider. For example the `local-path`
 provider considers files to be valid migrations, if they match a given
 regex pattern.
 
-In order to create a new provider you can subclass the
+In order to create a new provider you should inherit from the
 `MIGRATUM:BASE-PROVIDER` class and implement the following generic
 functions on your newly defined class.
 
@@ -583,27 +691,25 @@ example code.
 ## Implementing new drivers
 
 A `driver` is responsible for communicating with the database we are
-migrating and actually executing the upgrade and downgrade scripts.
+migrating and executes the upgrade and downgrade scripts.
 
 The driver also takes care of registering applied migrations after
 applying an upgrade script and also unregistering them during
 downgrade, thus it is the drivers' decision how to implement
 registering and unregistering. For example the `dbi` builtin driver
-registers applied migrations on the same database it is migrating, but
+registers applied migrations in the same database it is migrating, but
 a custom driver could choose a different stategy instead, e.g. use a
 key/value store, local files, or some remote endpoint instead.
 
-New drivers can be implemented by subclassing the
+New drivers can be implemented by inheriting from the
 `MIGRATUM:BASE-DRIVER` class. The following methods should be
-implemented on drivers.
+implemented on new drivers.
 
-| Method                                 | Description                                |
-|----------------------------------------|--------------------------------------------|
-| `MIGRATUM:DRIVER-LIST-APPLIED`         | Returns the list of applied migrations     |
-| `MIGRATUM:DRIVER-REGISTER-MIGRATION`   | Registers a successfully applied migration |
-| `MIGRATUM:DRIVER-UNREGISTER-MIGRATION` | Unregisters previously applied migration   |
-| `MIGRATUM:DRIVER-APPLY-UP-MIGRATION`   | Executes the upgrade script                |
-| `MIGRATUM:DRIVER-APPLY-DOWN-MIGRATION` | Executes the downgrade script              |
+| Method                               | Description                                            |
+|--------------------------------------|--------------------------------------------------------|
+| `MIGRATUM:DRIVER-LIST-APPLIED`       | Returns the list of applied migrations                 |
+| `MIGRATUM:DRIVER-REGISTER-MIGRATION` | Registers/unregister a successfully applied migration  |
+| `MIGRATUM:DRIVER-APPLY-MIGRATION`    | Applies a migration according to the given `direction` |
 
 The following methods can be overriden, if needed.
 
@@ -618,30 +724,21 @@ The following methods can be overriden, if needed.
 You can check the [dbi driver](./src/driver/dbi.lisp) implementation
 for some example code.
 
+Additional methods can also be overriden, if needed. For example if
+you need to have a different representation for the pending migrations
+you can override the `MIGRATUM:DISPLAY-PENDING` method.
+
 ## Tests
 
 Tests are provided as part of the `cl-migratum.test` system.
 
-In order to run the tests you can evaluate the following expressions.
+In order to run the tests you can execute.
 
 ``` common-lisp
-CL-USER> (ql:quickload :cl-migratum.test)
-CL-USER> (asdf:test-system :cl-migratum.test)
+make test
 ```
 
 Or you can run the tests in a Docker container instead.
-
-First, build the Docker image.
-
-``` shell
-docker build -t cl-migratum .
-```
-
-Run the tests.
-
-``` shell
-docker run --rm cl-migratum
-```
 
 ## Contributing
 
