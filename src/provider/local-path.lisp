@@ -234,6 +234,10 @@ GROUP-MIGRATION-FILES-BY id function."
                       (down-extension (getf down-migration :extension))
                       (mapping (get-file-mapping provider up-extension))
                       (migration-class (getf mapping :class)))
+                 (unless up-migration
+                   (error "Missing upgrade migration for ~A" id))
+                 (unless down-migration
+                   (error "Missing downgrade migration for ~A" id))
                  (unless (equal up-extension down-extension)
                    (error "Upgrade and downgrade migration for ~A are of different kinds: ~A and ~A"
                           id up-extension down-extension))
