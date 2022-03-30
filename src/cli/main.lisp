@@ -45,7 +45,8 @@
                         :description "log level"
                         :short-name #\l
                         :long-name "log-level"
-                        :items '(("info" . :info)
+                        :items '(("off" . :off)
+                                 ("info" . :info)
                                  ("debug" . :debug))
                         :initial-value "info"
                         :env-vars '("MIGRATUM_LOG_LEVEL")
