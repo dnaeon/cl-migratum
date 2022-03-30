@@ -61,4 +61,5 @@
                              (:file "print-doc")
                              (:file "migrate")
                              (:file "zsh-completions")
+                             (:file "revert")
                              (:file "main")))))
