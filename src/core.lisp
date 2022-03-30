@@ -256,7 +256,7 @@
     (when pending
       (ascii-table:display table))))
 
-(defmethod display-applied ((driver base-driver) &key offset limit)
+(defmethod display-applied ((driver base-driver) &key (offset 0) (limit 100))
   (let ((applied (driver-list-applied driver :offset offset :limit limit))
         (table (ascii-table:make-table (list "ID" "DESCRIPTION" "APPLIED" "KIND") :header "APPLIED MIGRATIONS")))
     (dolist (migration applied)
