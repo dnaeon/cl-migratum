@@ -62,5 +62,6 @@
                              (:file "migrate")
                              (:file "zsh-completions")
                              (:file "revert")
+                             (:file "reset")
                              (:file "status")
                              (:file "main")))))
