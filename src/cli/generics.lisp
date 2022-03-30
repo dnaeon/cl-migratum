@@ -33,3 +33,17 @@
 
 (defgeneric get-db-connection (kind command)
   (:documentation "Given the context of COMMAND creates a new database connection of the given KIND"))
+
+(defmethod get-provider ((kind (eql :infer)) (command clingon:command))
+  "Helper method to infer the provider from the command's context"
+  (let ((kind ((clingon:getopt command :provider/kind))))
+    (unless kind
+      (error "No provider kind specified"))
+    (get-provider kind command)))
+
+(defmethod get-driver ((kind (eql :infer)) (command clingon:command))
+  "Helper method to infer the driver from the command's context"
+  (let ((kind (clingon:getopt command :driver/kind)))
+    (unless kind
+      (error "No driver kind specified"))
+    (get-driver kind command)))
