@@ -36,7 +36,7 @@
 
 (defmethod get-provider ((kind (eql :infer)) (command clingon:command))
   "Helper method to infer the provider from the command's context"
-  (let ((kind ((clingon:getopt command :provider/kind))))
+  (let ((kind (clingon:getopt command :provider/kind)))
     (unless kind
       (error "No provider kind specified"))
     (get-provider kind command)))

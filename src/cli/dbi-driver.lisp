@@ -26,7 +26,7 @@
 (in-package :cl-migratum.cli)
 
 (defmethod get-driver ((kind (eql :dbi)) (command clingon:command))
-  (let ((provider (get-provider (clingon:getopt command :provider/kind) command))
+  (let ((provider (get-provider :infer command))
         (db-kind (clingon:getopt command :driver.dbi/db-kind)))
     (unless db-kind
       (error "DBI: No database kind specified"))

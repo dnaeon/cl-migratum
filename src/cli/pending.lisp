@@ -27,8 +27,7 @@
 
 (defun pending/handler (cmd)
   "The handler for the `pending' command"
-  (let* ((driver-kind (clingon:getopt cmd :driver/kind))
-         (driver (get-driver driver-kind cmd)))
+  (let ((driver (get-driver :infer cmd)))
     (cl-migratum:display-pending driver)))
 
 (defun pending/command ()
