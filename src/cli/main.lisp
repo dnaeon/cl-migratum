@@ -35,6 +35,7 @@
    (applied/command)
    (pending/command)
    (migrate/command)
+   (revert/command)
    (print-doc/command)
    (zsh-completions/command)))
 
