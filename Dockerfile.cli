@@ -1,0 +1,14 @@
+FROM clfoundation/sbcl:2.2.1 AS builder
+
+ENV QUICKLISP_ADD_TO_INIT_FILE=true
+ENV QUICKLISP_DIST_VERSION=latest
+
+WORKDIR /root/quicklisp/local-projects/cl-migratum
+COPY . .
+
+RUN /usr/local/bin/install-quicklisp && make cli
+
+FROM debian:bullseye-slim
+WORKDIR /app
+COPY --from=builder /root/quicklisp/local-projects/cl-migratum/bin/migratum .
+ENTRYPOINT ["./migratum"]
