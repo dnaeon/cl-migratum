@@ -57,6 +57,7 @@
                              (:file "dbi-driver")
                              (:file "rdbms-pgsql-driver")
                              (:file "applied")
+                             (:file "create")
                              (:file "pending")
                              (:file "print-doc")
                              (:file "migrate")

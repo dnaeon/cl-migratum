@@ -33,12 +33,13 @@
   "Returns the list of top-level sub-commands"
   (list
    (applied/command)
-   (pending/command)
+   (create/command)
    (migrate/command)
-   (revert/command)
-   (reset/command)
-   (status/command)
+   (pending/command)
    (print-doc/command)
+   (reset/command)
+   (revert/command)
+   (status/command)
    (zsh-completions/command)))
 
 (defun top-level/options ()
