@@ -1,10 +1,95 @@
+* 2022-03-31
+
+Major refactoring with breaking changes in the core =migratum=
+system.
+
+The =MIGRATUM:MIGRATION-LOAD-UP-SCRIPT= and
+=MIGRATUM:MIGRATION-LOAD-DOWN-SCRIPT= have been collapsed into a
+single generic function - =MIGRATUM:MIGRATION-LOAD=. The new generic
+function expects an argument, which specifies the direction of the
+migration to be loaded, e.g. =:up= or =:down= respectively for
+=upgrade= and =downgrade= scripts.
+
+New generic function =MIGRATUM:MIGRATION-KIND= has been added, which
+describes the _kind_ of the migration.
+
+The =migratum.provider.local-path= system and provider implementation
+have been updated to support additional migration kinds. The
+=local-path= provider can now discover =:sql= and =:lisp= migration
+kinds.
+
+The =:lisp= migration kind is a new migration, which allows invoking a
+regular Lisp function as part of the upgrade and downgrade process.
+
+=MIGRATUM.PROVIDER.LOCAL-PATH:LOCAL-PATH-MIGRATION= serves as a base
+class for the newly added migration kinds:
+
+- =MIGRATUM.PROVIDER.LOCAL-PATH:SQL-MIGRATION=
+- =MIGRATUM.PROVIDER.LOCAL-PATH:LISP-MIGRATION=
+
+The core schema used by the =MIGRATUM.DRIVER.DBI= and
+=MIGRATUM.DRIVER.RDBMS-POSTGRESQL= has been adjusted to include the
+newly added migration kind column.
+
+The =MIGRATUM:DRIVER-APPLY-UP-MIGRATION= and
+=MIGRATUM:DRIVER-APPLY-DOWN-MIGRATION= functions have been collapsed
+into a single =MIGRATUM:DRIVER-APPLY-MIGRATION= generic function,
+which expects a _direction_ of the migration, e.g. =:up= or =:down=.
+
+The =MIGRATUM:DRIVER-REGISTER-MIGRATION= and
+=MIGRATUM:DRIVER-UNREGISTER-MIGRATION= have been collapsed into a
+single =MIGRATUM:DRIVER-REGISTER-MIGRATION=, which expects a
+_direction_ of the migration. The direction specifies whether to
+perform a registration of applied migration, or unregistering a
+migration as part of a rollback.
+
+New generic function with default implementation for =BASE-DRIVER= has
+been added - =MIGRATUM:RESET=. =MIGRATUM:RESET= will revert all
+previously applied migrations and re-apply them again.
+
+Initial version of the =cl-migratum.driver.mixins= system, which
+provides various driver-related mixin classes. The newly added =:lisp=
+migration kind is based on the
+=MIGRATUM.DRIVER.MIXINS:LISP-DRIVER-MIXIN= class.
+
+The =LOCAL-PATH= provider now requires that a migration always goes as
+a pair of an upgrade/downgrade migration.
+
+New system added, which provides a command-line interface (CLI) app
+for =migratum= - =cl-migratum.cli=.
+
+Commands provided as part of the CLI app include:
+
+- =applied= - displays the applied migrations
+- =create= - creates new migration sequences
+- =migrate= - applies all pending migrations
+- =pending= - displays all pending migrations
+- =print-doc= - prints the markdown documentation
+- =reset= - revert all applied migrations and re-apply them again
+- =revert= - revert previously applied migrations
+- =status= - display status information
+- =zsh-completions= - dump the Zsh completions
+
+* 2022-03-25
+
+New driver system has been added ([[https://github.com/darabi][@darabi]])
+
+- =migratum.driver.rdbms-postgresql=
+
+See the following PRs for more details.
+
+- [[https://github.com/dnaeon/cl-migratum/pull/4][PR #4]]
+- [[https://github.com/dnaeon/cl-migratum/pull/10][PR #10]]
+
 * 2022-03-23
 
-The =MIGRATUM.PROVIDER.LOCAL-PATH= provider accepts a list of
+The =MIGRATUM.PROVIDER.LOCAL-PATH= provider now accepts a list of
 migration resource paths.
 
 - =CL-MIGRATUM= system version bumped to v0.5.0
 - =CL-MIGRATUM.PROVIDER.LOCAL-PATH= system version bumped to v0.3.0
+
+See [[https://github.com/dnaeon/cl-migratum/pull/9][PR #9]] for more details.
 
 ** Breaking Changes
 
@@ -18,3 +103,32 @@ change.
 The =MIGRATUM:PROVIDER-CREATE-MIGRATION= method specializing on
 =MIGRATUM.PROVIDER.LOCAL-PATH= will create new migration resources in
 the first specified migration resource path.
+
+* 2022-03-18
+
+Added Github Workflow actions for running the test suite of =migratum=
+([[https://github.com/darabi][@darabi]]).
+
+See [[https://github.com/dnaeon/cl-migratum/pull/5][PR #5]] for more details.
+
+* 2021-07-07
+
+Added new generic functions, which allow for a =provider= and =driver=
+to implement shutdown procedures.
+
+- =MIGRATUM:PROVIDER-SHUTDOWN=
+- =MIGRATUM:DRIVER-SHUTDOWN=
+
+System versions bumped to =v0.3.0=.
+
+See [[https://github.com/dnaeon/cl-migratum/issues/2][issue #2]] for more details.
+
+* 2021-06-05
+
+Added support for executing multiple statements as part of SQL
+migrations.
+
+* 2021-04-30
+
+Initial version of core =migration= system along with the =local-path=
+provider and =sql= driver.
