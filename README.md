@@ -4,6 +4,8 @@
 performing [database schema
 migrations](https://en.wikipedia.org/wiki/Schema_migration).
 
+![migratum-demo](./images/migratum-demo.gif)
+
 ## Requirements
 
 * [Quicklisp](https://www.quicklisp.org/beta/)
