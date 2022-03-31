@@ -8,5 +8,7 @@ cli:
                 --eval '(asdf:make :cl-migratum.cli)' \
                 --eval '(quit)'
 
-.PHONY: test cli
+cli-doc: cli
+	bin/migratum print-doc > docs/migratum-cli.md
 
+.PHONY: test cli cli-doc
