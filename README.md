@@ -20,6 +20,7 @@ The following systems are available as part of this repo.
 | `cl-migratum.driver.rmdbs-postgresql` | PostgreSQL driver based on `hu.dwim.rdbms`          |
 | `cl-migratum.driver.mixins`           | Various mixin classes used by drivers               |
 | `cl-migratum.test`                    | Test suite for `cl-migratum`                        |
+| `cl-migratum.cli`                     | CLI application of `migratum`                       |
 
 ## Installation
 
@@ -30,6 +31,40 @@ Clone the [cl-migratum](https://github.com/dnaeon/cl-migratum) repo in your
 
 ``` shell
 git clone https://github.com/dnaeon/cl-migratum.git
+```
+
+## CLI
+
+You can install the CLI application of `migratum` by executing the
+following command.
+
+``` shell
+make cli
+```
+
+The `migratum` binary will be built into the `bin/migratum`
+directory. You can now install the binary somewhere in your `PATH`.
+
+Once the `migratum` binary is built you can also generate the Zsh
+completions by executing the following command.
+
+``` shell
+migratum zsh-completions > ~/.zsh-completions/_migratum
+```
+
+Make sure that `~/.zsh-completions` is part of your Zsh `FPATH`.
+
+In order to generate the Markdown documentation of the CLI app use the
+`cli-doc` target:
+
+``` shell
+make cli-doc
+```
+
+Or you can build a Docker image instead.
+
+``` shell
+docker build -t migratum.cli:latest -f Dockerfile.cli .
 ```
 
 ## Concepts
