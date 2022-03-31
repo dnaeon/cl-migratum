@@ -70,6 +70,8 @@ Commands provided as part of the CLI app include:
 - =status= - display status information
 - =zsh-completions= - dump the Zsh completions
 
+See [[https://github.com/dnaeon/cl-migratum/issues/8][issue #8]] and [[https://github.com/dnaeon/cl-migratum/pull/12][PR #12]] for more details.
+
 * 2022-03-25
 
 New driver system has been added ([[https://github.com/darabi][@darabi]])
