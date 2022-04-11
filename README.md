@@ -117,10 +117,10 @@ connected to.
 
 The following drivers are currently supported by `cl-migratum`.
 
-| Name               | Description                                                                                                               | System                                |
-|--------------------|---------------------------------------------------------------------------------------------------------------------------|---------------------------------------|
-| `dbi`              | Driver for performing schema migrations against a SQL database using [CL-DBI](https://github.com/fukamachi/cl-dbi)        | `cl-migratum.driver.dbi`              |
-| `rdbms-postgresql` | Driver for performing schema migrations against a SQL database using [hu.dwim.rdbms](http://dwim.hu/darcs/hu.dwim.rdbms/) | `cl-migratum.driver.rdbms-postgresql` |
+| Name               | Description                                                                                                               | System                                | Migration registration |
+|--------------------|---------------------------------------------------------------------------------------------------------------------------|---------------------------------------|------------------------|
+| `dbi`              | Driver for performing schema migrations against a SQL database using [CL-DBI](https://github.com/fukamachi/cl-dbi)        | `cl-migratum.driver.dbi`              | In table `migration`   |
+| `rdbms-postgresql` | Driver for performing schema migrations against a SQL database using [hu.dwim.rdbms](http://dwim.hu/darcs/hu.dwim.rdbms/) | `cl-migratum.driver.rdbms-postgresql` | In table `migration`   |
 
 ## Usage
 
