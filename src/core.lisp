@@ -45,6 +45,7 @@
    :provider-name
    :provider-list-migrations
    :provider-create-migration
+   :provider-touch-migration
    :find-migration-by-id
    :base-driver
    :driver-name
@@ -137,6 +138,9 @@
 
 (defgeneric provider-create-migration (direction kind provider id description content &key)
   (:documentation "Creates a new migration resource using the given provider"))
+
+(defgeneric provider-touch-migration (kind provider description &key id-generating-function)
+  (:documentation "Creates an empty up-and-down pair of migration resources using the given provider"))
 
 (defgeneric find-migration-by-id (provider id)
   (:documentation "Returns the migration with the given id from the provider"))
