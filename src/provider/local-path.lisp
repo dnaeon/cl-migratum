@@ -39,6 +39,7 @@
    :migration-kind
    :provider-list-migrations
    :provider-create-migration
+   :provider-touch-migration
    :make-migration-id)
   (:export
    :migration-file-p
@@ -292,6 +293,18 @@ GROUP-MIGRATION-FILES-BY id function."
                    :applied nil
                    :up-script-path nil
                    :down-script-path file-path)))
+
+(defmethod provider-touch-migration ((kind (eql :sql))
+                                     (provider local-path-provider)
+                                     (description string)
+                                     &key (id-generating-function #'make-migration-id))
+  (let ((args (list :sql
+                    provider
+                    (funcall id-generating-function)
+                    description
+                    "")))
+    (values (apply #'provider-create-migration (cons :up args))
+            (apply #'provider-create-migration (cons :down args)))))
 
 (defun %write-lisp-migration-file (id description direction path content)
   (log:debug "[LISP] Creating new migration in ~A" path)
