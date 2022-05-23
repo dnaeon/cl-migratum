@@ -38,9 +38,9 @@
       sequence
       (subseq sequence 0 n)))
 
-(defun make-migration-id ()
+(defun make-migration-id (&optional (timezone local-time:+utc-zone+))
   "Creates a new migration id from current timestamp"
-  (local-time:with-decoded-timestamp (:year year :month month :day day :hour hour :minute minute :sec sec)
+  (local-time:with-decoded-timestamp (:year year :month month :day day :hour hour :minute minute :sec sec :timezone timezone)
                                      (local-time:now)
     ;; use only the first value returned from parse-integer
     (values (parse-integer (format nil "~d~2,'0d~2,'0d~2,'0d~2,'0d~2,'0d" year month day hour minute sec)))))
