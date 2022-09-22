@@ -39,7 +39,6 @@
    :migration-kind
    :provider-list-migrations
    :provider-create-migration
-   :provider-touch-migration
    :make-migration-id)
   (:export
    :migration-file-p
@@ -55,7 +54,8 @@
    :provider-paths
    :provider-scan-pattern
    :provider-file-mappings
-   :make-provider))
+   :make-provider
+   :touch-migration))
 (in-package :cl-migratum.provider.local-path)
 
 (defclass local-path-migration (base-migration)
@@ -294,12 +294,15 @@ GROUP-MIGRATION-FILES-BY id function."
                    :up-script-path nil
                    :down-script-path file-path)))
 
-(defmethod provider-touch-migration ((kind (eql :sql))
-                                     (provider local-path-provider)
+(defgeneric touch-migration (kind local-path-provider description &key id-generating-function)
+  (:documentation "Creates an empty up-and-down pair of migration resources using the given local-path-provider"))
+
+(defmethod touch-migration ((kind (eql :sql))
+                                     (local-path-provider local-path-provider)
                                      (description string)
                                      &key (id-generating-function #'make-migration-id))
   (let ((args (list :sql
-                    provider
+                    local-path-provider
                     (funcall id-generating-function)
                     description
                     "")))
