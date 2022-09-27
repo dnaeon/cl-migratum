@@ -317,8 +317,7 @@ GROUP-MIGRATION-FILES-BY id function."
                     local-path-provider
                     (funcall id-generating-function)
                     description
-                    (format nil "~%;; TODO: replace :my-system, :my-package, and my-hander-function as you need, so cl-migration can find your migration handler function. ~%~%"
-                            '(:system :my-system :package :my-package :handler :my-handler-function)))))
+                    '(:system :my-system :package :my-package :handler :my-handler-function))))
     (values (apply #'provider-create-migration (cons :up args))
             (apply #'provider-create-migration (cons :down args)))))
 
