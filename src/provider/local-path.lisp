@@ -309,6 +309,19 @@ GROUP-MIGRATION-FILES-BY id function."
     (values (apply #'provider-create-migration (cons :up args))
             (apply #'provider-create-migration (cons :down args)))))
 
+(defmethod touch-migration ((kind (eql :lisp))
+                            (local-path-provider local-path-provider)
+                            (description string)
+                            &key (id-generating-function #'make-migration-id))
+  (let ((args (list :lisp
+                    local-path-provider
+                    (funcall id-generating-function)
+                    description
+                    (format nil "~%;; TODO: replace :my-system, :my-package, and my-hander-function as you need, so cl-migration can find your migration handler function. ~%~%"
+                            '(:system :my-system :package :my-package :handler :my-handler-function)))))
+    (values (apply #'provider-create-migration (cons :up args))
+            (apply #'provider-create-migration (cons :down args)))))
+
 (defun %write-lisp-migration-file (id description direction path content)
   (log:debug "[LISP] Creating new migration in ~A" path)
   (let ((system-name (getf content :system))
