@@ -295,7 +295,13 @@ GROUP-MIGRATION-FILES-BY id function."
                    :down-script-path file-path)))
 
 (defgeneric touch-migration (kind local-path-provider description &key id-generating-function)
-  (:documentation "Creates an empty up-and-down pair of migration resources using the given local-path-provider. If KIND is :lisp, for cl-migratum to invoke your lisp migration handler function, please replace :my-system, :my-package, :my-handler-function in the newly created pair of files as your need."))
+  (:documentation "Creates an empty up-and-down pair of migration
+  resources using the given local-path-provider.
+
+  If KIND is :lisp, for cl-migratum to invoke your lisp migration
+  handler function, please replace :my-system, :my-package,
+  :my-handler-function in the newly created pair of files
+  as your need."))
 
 (defmethod touch-migration ((kind (eql :sql))
                             (local-path-provider local-path-provider)
