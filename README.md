@@ -535,7 +535,10 @@ new migration sequence. The arguments it expects are the `direction`
 (e.g. `:up` or `:down`), the migration `kind` (e.g. `:sql`, `:lisp`,
 etc.), an instance of a `provider`, `id`, `description` and `content`.
 
-Knowing `migratum:provider-create-migration` by the documentation below, you can also use the wrapper `migratum.provider.local-path:touch-migration` to create a pair of up-and-down empty migrations with a `LOCAL-PATH` provider.
+Knowing `migratum:provider-create-migration` by the documentation 
+below, you can also use the wrapper 
+`migratum.provider.local-path:touch-migration` to create a pair of 
+up-and-down empty migrations with a `LOCAL-PATH` provider.
 
 #### SQL migrations
 
