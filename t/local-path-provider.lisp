@@ -134,4 +134,77 @@
       (ok (signals (provider-create-migration :up :lisp *provider* id description '(:system :foo)))
           "Signals on invalid spec - 3")
       (ok (signals (provider-create-migration :up :lisp *provider* id description '(:system :foo :package :bar)))
-          "Signals on invalid spec - 4"))))
+          "Signals on invalid spec - 4")))
+
+  (testing "touch-migration - :sql kind"
+    (let* ((description "my-new-sql-migration")
+           (normalized-description "my_new_sql_migration"))
+      (multiple-value-bind (up down)
+          (migratum.provider.local-path:touch-migration :sql *provider* description)
+        (ok (and (numberp (migration-id up)) (numberp (migration-id down)))
+            "migration id is a number")
+        (ok (and (equal :sql (migration-kind up)) (equal :sql (migration-kind down)))
+            "migration kinds match")
+        (ok (and (string= normalized-description (migration-description up))
+                 (string= normalized-description (migration-description down)))
+            "migration description matches")
+        (ok (string= (migration-load :up up)
+                     (format nil "-- id: ~A~
+                                ~&-- direction: UP~
+                                ~&-- description: ~A~
+                                ~2&~%"
+                             (migration-id up)
+                             normalized-description))
+            "upgrade script matches")
+        (ok (string= (migration-load :down down)
+                     (format nil "-- id: ~A~
+                                ~&-- direction: DOWN~
+                                ~&-- description: ~A~
+                                ~2&~%"
+                             (migration-id down)
+                             normalized-description))
+            "downgrade script matches")
+        (uiop:delete-file-if-exists (cl-migratum.provider.local-path:migration-up-script-path up))
+        (uiop:delete-file-if-exists (cl-migratum.provider.local-path:migration-down-script-path down)))))
+
+  (testing "touch-migration - :lisp kind"
+    (let* ((description "my-new-lisp-migration")
+           (normalized-description "my_new_lisp_migration")
+           (spec '(:system :my-system :package :my-package :handler :my-handler-function)))
+      (multiple-value-bind (up down)
+          (migratum.provider.local-path:touch-migration :lisp *provider* description)
+        (ok (and (numberp (migration-id up)) (numberp (migration-id down)))
+            "migration id is a number")
+        (ok (and (equal :lisp (migration-kind up)) (equal :lisp (migration-kind down)))
+            "migration kinds match")
+        (ok (and (string= normalized-description (migration-description up))
+                 (string= normalized-description (migration-description down)))
+            "migration description matches")
+        (ok (string= (with-open-file (stream
+                                      (migratum.provider.local-path:migration-up-script-path up))
+                       (let ((contents (make-string (file-length stream))))
+                         (read-sequence contents stream)
+                         contents))
+                     (format nil ";; id: ~A~
+                                ~&;; direction: UP~
+                                ~&;; description: ~A~
+                                ~2&~(~S~)~%"
+                             (migration-id up)
+                             normalized-description
+                             spec))
+            "upgrade spec matches")
+        (ok (string= (with-open-file (stream
+                                      (migratum.provider.local-path:migration-down-script-path down))
+                       (let ((contents (make-string (file-length stream))))
+                         (read-sequence contents stream)
+                         contents))
+                     (format nil ";; id: ~A~
+                                ~&;; direction: DOWN~
+                                ~&;; description: ~A~
+                                ~2&~(~S~)~%"
+                             (migration-id down)
+                             normalized-description
+                             spec))
+            "downgrade spec matches")
+        (uiop:delete-file-if-exists (cl-migratum.provider.local-path:migration-up-script-path up))
+        (uiop:delete-file-if-exists (cl-migratum.provider.local-path:migration-down-script-path down))))))
