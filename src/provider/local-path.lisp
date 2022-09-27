@@ -298,9 +298,9 @@ GROUP-MIGRATION-FILES-BY id function."
   (:documentation "Creates an empty up-and-down pair of migration resources using the given local-path-provider"))
 
 (defmethod touch-migration ((kind (eql :sql))
-                                     (local-path-provider local-path-provider)
-                                     (description string)
-                                     &key (id-generating-function #'make-migration-id))
+                            (local-path-provider local-path-provider)
+                            (description string)
+                            &key (id-generating-function #'make-migration-id))
   (let ((args (list :sql
                     local-path-provider
                     (funcall id-generating-function)
