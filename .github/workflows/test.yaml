@@ -6,6 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       WORKSPACE: /github/workspace/
+      CI_SYSTEM: github
       # the env vars for the PostgreSQL connection must be in sync
       # with the 'postgres' service below
       PGHOST: postgres
