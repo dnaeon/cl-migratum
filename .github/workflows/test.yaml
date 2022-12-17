@@ -37,4 +37,4 @@ jobs:
       - name: Test
         uses: docker://clfoundation/sbcl:2.2.4
         with:
-          args: /github/workspace/bin/run-ci-tests.sh
+          args: /github/workspace/scripts/run-ci-tests.sh
