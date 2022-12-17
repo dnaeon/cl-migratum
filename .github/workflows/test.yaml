@@ -12,7 +12,7 @@ jobs:
       PGDATABASE: migratum
       PGUSER: migratum
       PGPASSWORD: FvbRd5qdeWHNum9p
-      QUICKLISP_DIST_VERSION: 2022-02-20
+      QUICKLISP_DIST_VERSION: latest
       QUICKLISP_ADD_TO_INIT_FILE: true
     # Service containers to run with `container-job`
     services:
@@ -33,8 +33,8 @@ jobs:
           # Maps tcp port 5432 on service container to the host
           - 5432:5432
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Test
-        uses: docker://clfoundation/sbcl:2.2.1
+        uses: docker://clfoundation/sbcl:2.2.4
         with:
           args: /github/workspace/bin/run-ci-tests.sh

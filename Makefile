@@ -1,7 +1,7 @@
 LISP ?= sbcl
 
 test:
-	./entrypoint.sh
+	./scripts/run-tests.sh
 
 cli:
 	${LISP} --eval '(ql:quickload :cl-migratum.cli)' \
