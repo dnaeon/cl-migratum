@@ -9,15 +9,15 @@ jobs:
       matrix:
         implementation:
           - sbcl
-          - ecl
+          # - ecl
           - ccl
         include:
           - implementation: sbcl
             image: clfoundation/sbcl:2.2.4
             command: sbcl
-          - implementation: ecl
-            image: clfoundation/ecl:21.2.1
-            command: ecl
+          # - implementation: ecl
+          #   image: clfoundation/ecl:21.2.1
+          #   command: ecl
           - implementation: ccl
             image: clfoundation/ccl:1.12
             command: ccl
