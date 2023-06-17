@@ -46,13 +46,19 @@
   "Upgrade handler for migration 20220327224455"
   (etypecase driver
     (cl-migratum.driver.dbi:dbi-driver (%dbi-apply-up driver))
-    (cl-migratum.driver.rdbms-postgresql:rdbms-postgresql-driver (%rdbms-pgsql-apply-up driver))))
+    (cl-migratum.driver.rdbms-postgresql:rdbms-postgresql-driver
+     (%rdbms-pgsql-apply-up driver))
+    (cl-migratum.driver.postmodern-postgresql:postmodern-postgresql-driver
+     (%pomo-pgsql-apply-up driver))))
 
 (defun down (driver)
   "Downgrade handler for migration 20220327224455"
   (etypecase driver
     (cl-migratum.driver.dbi:dbi-driver (%dbi-apply-down driver))
-    (cl-migratum.driver.rdbms-postgresql:rdbms-postgresql-driver (%rdbms-pgsql-apply-down driver))))
+    (cl-migratum.driver.rdbms-postgresql:rdbms-postgresql-driver
+     (%rdbms-pgsql-apply-down driver))
+    (cl-migratum.driver.postmodern-postgresql:postmodern-postgresql-driver
+     (%pomo-pgsql-apply-down driver))))
 
 (defun %dbi-apply-up (driver)
   "CL-DBI upgrade handler for migration id 20220327224455"
@@ -98,3 +104,24 @@
     (hu.dwim.rdbms:with-database db
       (hu.dwim.rdbms:with-transaction
         (hu.dwim.rdbms:execute query)))))
+
+(defun %pomo-pgsql-apply-up (driver)
+  "POMO-POSTGRESQL upgrade handler for migration id 20220327224455"
+  (declare (ignore driver))
+  (let ((schema *table-schema*)
+        (populate-stmt "INSERT INTO lisp_code_table (id, name, value) VALUES (~A, '~A', ~A)"))
+      ;; Create the schema and populate it with some data
+      (pomo:with-transaction ()
+        (pomo:query schema)
+        (loop :for i :from 1 :to 42
+              :for name = (format nil "name-~A" i)
+              :for value = (+ i 42) :do
+                (pomo:query (format nil populate-stmt i name value))))))
+
+(defun %pomo-pgsql-apply-down (driver)
+  "POMO-POSTGRESQL downgrade handler for migration id 20220327224455"
+  (declare (ignore driver))
+  (let ((query "DROP TABLE lisp_code_table"))
+      (pomo:with-transaction ()
+        (pomo:query query))))
+
