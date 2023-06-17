@@ -57,7 +57,8 @@
    :make-migration-id)
   (:import-from :migratum.provider.local-path)
   (:import-from :migratum.driver.dbi)
-  (:import-from :migratum.driver.rdbms-postgresql))
+  (:import-from :migratum.driver.rdbms-postgresql)
+  (:import-from :migratum.driver.postmodern-postgresql))
 (in-package :cl-migratum.test)
 
 (defparameter *migrations-path*
@@ -80,6 +81,10 @@
   nil
   "Driver from library hu.dwim.rdbms for PostgreSQL")
 
+(defparameter *postmodern-postgresql-driver*
+  nil
+  "Driver from library pomo for PostgreSQL")
+
 (defparameter *provider*
   nil
   "Local path provider used during tests")
@@ -88,20 +93,26 @@
   (setf *tmpdir* (tmpdir:mkdtemp))
   (setf *sqlite-conn*
         (cl-dbi:connect :sqlite3
-                        :database-name (merge-pathnames (make-pathname :name "cl-migratum" :type "db")
+                        :database-name (merge-pathnames
+                                        (make-pathname :name "cl-migratum" :type "db")
                                                         *tmpdir*)))
   (setf *provider* (cl-migratum.provider.local-path:make-provider (list *migrations-path*)))
   (setf *dbi-driver*
         (migratum.driver.dbi:make-driver *provider* *sqlite-conn*))
-  (setf *rdbms-postgresql-driver*
-        (migratum.driver.rdbms-postgresql:make-driver *provider*
-                                                      `(:host ,(or (uiop:getenv "PGHOST") "localhost")
-                                                        :database ,(or (uiop:getenv "PGDATABASE") "migratum")
-                                                        :user-name ,(or (uiop:getenv "PGUSER") "migratum")
-                                                        :password ,(or (uiop:getenv "PGPASSWORD") "FvbRd5qdeWHNum9p")))))
+  (let ((auth
+          `(:host ,(or (uiop:getenv "PGHOST") "localhost")
+            :database ,(or (uiop:getenv "PGDATABASE") "migratum")
+            :user-name ,(or (uiop:getenv "PGUSER") "migratum")
+            :password ,(or (uiop:getenv "PGPASSWORD") "FvbRd5qdeWHNum9p"))))
+    (setf *postmodern-postgresql-driver*
+          (migratum.driver.postmodern-postgresql:make-driver *provider* auth)
+          *rdbms-postgresql-driver*
+          (migratum.driver.rdbms-postgresql:make-driver *provider* auth))))
+                          
 
 (teardown
   (provider-shutdown *provider*)
   (driver-shutdown *dbi-driver*)
+  (driver-shutdown *postmodern-postgresql-driver*)
   (when *tmpdir*
     (uiop:delete-directory-tree *tmpdir* :validate t)))
