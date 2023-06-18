@@ -81,9 +81,17 @@
   nil
   "Driver from library hu.dwim.rdbms for PostgreSQL")
 
+(defparameter *rdbms-postgresql-port*
+  5432
+  "Listening port for Postmoderns test PostgreSQL instance.")
+
 (defparameter *postmodern-postgresql-driver*
   nil
   "Driver from library pomo for PostgreSQL")
+
+(defparameter *rdbms-postgresql-port*
+  5433
+  "Listening port for RDBM's test PostgreSQL instance.")
 
 (defparameter *provider*
   nil
@@ -105,11 +113,14 @@
             :user-name ,(or (uiop:getenv "PGUSER") "migratum")
             :password ,(or (uiop:getenv "PGPASSWORD") "FvbRd5qdeWHNum9p"))))
     (setf *postmodern-postgresql-driver*
-          (migratum.driver.postmodern-postgresql:make-driver *provider* auth)
+          (migratum.driver.postmodern-postgresql:make-driver
+           *provider*
+           (list* :port *postmodern-postgresql-port auth))
           *rdbms-postgresql-driver*
-          (migratum.driver.rdbms-postgresql:make-driver *provider* auth))))
-                          
-
+          (migratum.driver.rdbms-postgresql:make-driver
+           *provider*
+           (list* :port *rdbms-postgresql-port* auth)))))
+                         
 (teardown
   (provider-shutdown *provider*)
   (driver-shutdown *dbi-driver*)
