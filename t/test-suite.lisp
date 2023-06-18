@@ -83,15 +83,15 @@
 
 (defparameter *rdbms-postgresql-port*
   5432
-  "Listening port for Postmoderns test PostgreSQL instance.")
+  "Listening port for RDBM's test PostgreSQL instance.")
 
 (defparameter *postmodern-postgresql-driver*
   nil
   "Driver from library pomo for PostgreSQL")
 
-(defparameter *rdbms-postgresql-port*
+(defparameter *postmodern-postgresql-port*
   5433
-  "Listening port for RDBM's test PostgreSQL instance.")
+  "Listening port for Postmoderns test PostgreSQL instance.")
 
 (defparameter *provider*
   nil
@@ -115,7 +115,7 @@
     (setf *postmodern-postgresql-driver*
           (migratum.driver.postmodern-postgresql:make-driver
            *provider*
-           (list* :port *postmodern-postgresql-port auth))
+           (list* :port *postmodern-postgresql-port* auth))
           *rdbms-postgresql-driver*
           (migratum.driver.rdbms-postgresql:make-driver
            *provider*
