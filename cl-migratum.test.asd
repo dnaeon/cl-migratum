@@ -17,6 +17,7 @@
                :cl-migratum.provider.local-path
                :cl-migratum.driver.dbi
                :cl-migratum.driver.rdbms-postgresql
+               :cl-migratum.driver.postmodern-postgresql
                :dbd-sqlite3
                :tmpdir
                :rove)
@@ -39,5 +40,6 @@
                              (:file "20220327224455-migration")
                              (:file "local-path-provider")
                              (:file "dbi-driver")
-                             (:file "rdbms-postgresql-driver"))))
+                             (:file "rdbms-postgresql-driver")
+                             (:file "postmodern-postgresql-driver"))))
   :perform (test-op (op c) (uiop:symbol-call :rove :run-suite :cl-migratum.test)))
