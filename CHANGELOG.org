@@ -1,3 +1,15 @@
+* 2023-06-28
+
+New driver for migrating PostgreSQL databases has been created, which
+is based on =postmodern= ([[https://github.com/K1D77A][@K1D77A]])
+
+- =cl-migratum.driver.postmodern-postgresql=
+
+References:
+
+- [[https://github.com/dnaeon/cl-migratum/pull/17][PR #17]]
+- [[https://github.com/dnaeon/cl-migratum/pull/18][PR #18]]
+
 * 2022-03-31
 
 Major refactoring with breaking changes in the core =migratum=
