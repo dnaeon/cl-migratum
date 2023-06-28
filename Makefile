@@ -11,4 +11,7 @@ cli:
 cli-doc: cli
 	bin/migratum print-doc > docs/migratum-cli.md
 
+test-postgres:
+	docker build -t dnaeon/postgres:latest -f postgres/Dockerfile postgres/
+
 .PHONY: test cli cli-doc
