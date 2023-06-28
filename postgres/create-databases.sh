@@ -15,7 +15,8 @@ function _create_user_and_db() {
     echo "Creating database ${_db_name} (owner ${_db_user}) ..."
     psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
         CREATE USER ${_db_user} PASSWORD '${_db_pass}';
-        CREATE DATABASE ${_db_name};
+        GRANT ALL ON SCHEMA public TO ${_db_user};
+        CREATE DATABASE ${_db_name} OWNER ${_db_user};
         GRANT ALL PRIVILEGES ON DATABASE ${_db_name} TO ${_db_user};
 EOSQL
 }
