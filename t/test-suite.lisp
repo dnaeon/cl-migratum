@@ -81,21 +81,24 @@
   nil
   "Driver from library hu.dwim.rdbms for PostgreSQL")
 
-(defparameter *rdbms-postgresql-port*
-  5432
-  "Listening port for RDBM's test PostgreSQL instance.")
-
 (defparameter *postmodern-postgresql-driver*
   nil
   "Driver from library pomo for PostgreSQL")
 
-(defparameter *postmodern-postgresql-port*
-  5433
-  "Listening port for Postmoderns test PostgreSQL instance.")
-
 (defparameter *provider*
   nil
   "Local path provider used during tests")
+
+(defun getenv (env &optional default)
+  "Returns the value of the given env var, if set."
+  (or (uiop:getenv env) default))
+
+(defun getenv-int (env &optional default)
+  "Returns the value of the given env var as integer, if set."
+  (let ((value (uiop:getenv env)))
+    (if value
+        (parse-integer value :radix 10)
+        default)))
 
 (setup
   (setf *tmpdir* (tmpdir:mkdtemp))
