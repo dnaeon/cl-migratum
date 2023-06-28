@@ -110,20 +110,23 @@
   (setf *provider* (cl-migratum.provider.local-path:make-provider (list *migrations-path*)))
   (setf *dbi-driver*
         (migratum.driver.dbi:make-driver *provider* *sqlite-conn*))
-  (let ((auth
-          `(:host ,(or (uiop:getenv "PGHOST") "localhost")
-            :database ,(or (uiop:getenv "PGDATABASE") "migratum")
-            :user-name ,(or (uiop:getenv "PGUSER") "migratum")
-            :password ,(or (uiop:getenv "PGPASSWORD") "FvbRd5qdeWHNum9p"))))
+  (let ((rdbms-auth
+          (list :host (getenv "PGHOST" "localhost")
+                :port (getenv-int "PGPORT" 5432)
+                :database (getenv "RDBMS_DB" "rdbms")
+                :user-name (getenv "RDBMS_USER" "rdbms_user")
+                :password (getenv "RDMBS_PASS" "rdbms_p4ss")))
+        (postmodern-auth
+          (list :host (getenv "PGHOST" "localhost")
+                :port (getenv-int "PGPORT" 5432)
+                :database (getenv "POSTMODERN_DB" "postmodern")
+                :user-name (getenv "POSTMODERN_USER" "postmodern_user")
+                :password (getenv "POSTMODERN_PASS" "postmodern_p4ss"))))
     (setf *postmodern-postgresql-driver*
-          (migratum.driver.postmodern-postgresql:make-driver
-           *provider*
-           (list* :port *postmodern-postgresql-port* auth))
+          (migratum.driver.postmodern-postgresql:make-driver *provider* postmodern-auth)
           *rdbms-postgresql-driver*
-          (migratum.driver.rdbms-postgresql:make-driver
-           *provider*
-           (list* :port *rdbms-postgresql-port* auth)))))
-                         
+          (migratum.driver.rdbms-postgresql:make-driver *provider* rdbms-auth))))
+
 (teardown
   (provider-shutdown *provider*)
   (driver-shutdown *dbi-driver*)

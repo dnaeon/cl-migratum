@@ -29,22 +29,24 @@ jobs:
         QUICKLISP_DIST_VERSION: latest
     env:
       WORKSPACE: /github/workspace/
-      # the env vars for the PostgreSQL connection must be in sync
-      # with the 'postgres' service below
       PGHOST: postgres
-      PGDATABASE: migratum
-      PGUSER: migratum
-      PGPASSWORD: FvbRd5qdeWHNum9p
+      PGPORT: 5432
+      RDBMS_DB: rdbms
+      RDBMS_USER: rdbms_user
+      RDBMS_PASS: rdbms_p4ss
+      POSTMODERN_DB: postmodern
+      POSTMODERN_USER: postmodern_user
+      POSTMODERN_PASS: postmodern_p4ss
     # Service containers to run with `container-job`
     services:
       # Label used to access the service container
       postgres:
-        # Docker Hub PostgreSQL image
-        image: postgres
-        # Provide the password for postgres
+        # Custom PostgreSQL image with support for multiple databases
+        image: dnaeon/postgres:15.3
         env:
-          POSTGRES_USER: migratum
-          POSTGRES_PASSWORD: FvbRd5qdeWHNum9p
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: xFvbRd5qdeWHNum9p
+          POSTGRES_DATABASES: rdbms,postmodern
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -53,21 +55,6 @@ jobs:
         ports:
           # Maps tcp port 5432 on service container to the host
           - 5432:5432
-      postgres2:
-        # Docker Hub PostgreSQL image
-        image: postgres
-        # Provide the password for postgres
-        env:
-          POSTGRES_USER: migratum
-          POSTGRES_PASSWORD: FvbRd5qdeWHNum9p
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          # Maps tcp port 5433 on service container to the host for second postgres service.
-          - 5433:5432          
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
