@@ -14,15 +14,16 @@ migrations](https://en.wikipedia.org/wiki/Schema_migration).
 
 The following systems are available as part of this repo.
 
-| System                                | Description                                         |
-|---------------------------------------|-----------------------------------------------------|
-| `cl-migratum`                         | Core system                                         |
-| `cl-migratum.provider.local-path`     | Provider which discovers migrations from local-path |
-| `cl-migratum.driver.dbi`              | `cl-dbi` database driver                            |
-| `cl-migratum.driver.rmdbs-postgresql` | PostgreSQL driver based on `hu.dwim.rdbms`          |
-| `cl-migratum.driver.mixins`           | Various mixin classes used by drivers               |
-| `cl-migratum.test`                    | Test suite for `cl-migratum`                        |
-| `cl-migratum.cli`                     | CLI application of `migratum`                       |
+| System                                     | Description                                         |
+|--------------------------------------------|-----------------------------------------------------|
+| `cl-migratum`                              | Core system                                         |
+| `cl-migratum.provider.local-path`          | Provider which discovers migrations from local-path |
+| `cl-migratum.driver.dbi`                   | `cl-dbi` database driver                            |
+| `cl-migratum.driver.rmdbs-postgresql`      | PostgreSQL driver based on `hu.dwim.rdbms`          |
+| `cl-migratum.driver.postmodern-postgresql` | PostgreSQL driver based on `postmodern`             |
+| `cl-migratum.driver.mixins`                | Various mixin classes used by drivers               |
+| `cl-migratum.test`                         | Test suite for `cl-migratum`                        |
+| `cl-migratum.cli`                          | CLI application of `migratum`                       |
 
 ## Installation
 
