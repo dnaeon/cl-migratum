@@ -24,7 +24,7 @@
 ;; THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (in-package :cl-user)
-(defpackage :cl-migratum.test.20220327224455
+(uiop:define-package :cl-migratum.test.20220327224455
   (:use :cl)
   (:import-from :cl-dbi)
   (:import-from :cl-migratum.driver.dbi)
@@ -91,7 +91,7 @@
     (hu.dwim.rdbms:with-database db
       ;; Create the schema and populate it with some data
       (hu.dwim.rdbms:with-transaction
-        (hu.dwim.rdbms:execute schema)
+          (hu.dwim.rdbms:execute schema)
         (loop :for i :from 1 :to 42
               :for name = (format nil "name-~A" i)
               :for value = (+ i 42) :do
@@ -103,25 +103,24 @@
         (query "DROP TABLE lisp_code_table"))
     (hu.dwim.rdbms:with-database db
       (hu.dwim.rdbms:with-transaction
-        (hu.dwim.rdbms:execute query)))))
+          (hu.dwim.rdbms:execute query)))))
 
 (defun %pomo-pgsql-apply-up (driver)
   "POMO-POSTGRESQL upgrade handler for migration id 20220327224455"
   (declare (ignore driver))
   (let ((schema *table-schema*)
         (populate-stmt "INSERT INTO lisp_code_table (id, name, value) VALUES (~A, '~A', ~A)"))
-      ;; Create the schema and populate it with some data
-      (pomo:with-transaction ()
-        (pomo:query schema)
-        (loop :for i :from 1 :to 42
-              :for name = (format nil "name-~A" i)
-              :for value = (+ i 42) :do
-                (pomo:query (format nil populate-stmt i name value))))))
+    ;; Create the schema and populate it with some data
+    (pomo:with-transaction ()
+      (pomo:query schema)
+      (loop :for i :from 1 :to 42
+            :for name = (format nil "name-~A" i)
+            :for value = (+ i 42) :do
+              (pomo:query (format nil populate-stmt i name value))))))
 
 (defun %pomo-pgsql-apply-down (driver)
   "POMO-POSTGRESQL downgrade handler for migration id 20220327224455"
   (declare (ignore driver))
   (let ((query "DROP TABLE lisp_code_table"))
-      (pomo:with-transaction ()
-        (pomo:query query))))
-
+    (pomo:with-transaction ()
+      (pomo:query query))))
