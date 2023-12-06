@@ -27,7 +27,13 @@ The following systems are available as part of this repo.
 
 ## Installation
 
-Latest development version can be installed from the Git repo.
+Installation is possible via [roswell](https://github.com/roswell/roswell). This will also build the `migratum` binary (see section CLI):
+
+``` shell
+ros install cl-migratum
+```
+
+The latest development version can be installed from the Git repo.
 
 Clone the [cl-migratum](https://github.com/dnaeon/cl-migratum) repo in your
 [Quicklisp local-projects directory](https://www.quicklisp.org/beta/faq.html).

@@ -24,7 +24,7 @@
 ;; THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (in-package :cl-user)
-(defpackage :cl-migratum.provider.local-path
+(uiop:define-package :cl-migratum.provider.local-path
   (:use :cl)
   (:nicknames :migratum.provider.local-path)
   (:import-from :log)
@@ -188,16 +188,16 @@ discovered from the given PATHS."
   "Groups migration files by id. Each group consists of the upgrade and downgrade scripts."
   (reduce (lambda (acc file)
             (cl-ppcre:register-groups-bind (id description direction extension)
-                (scanner (namestring file))
-              (let* ((id (parse-integer id))
-                     (group (gethash id acc nil)))
-                (setf (gethash id acc)
-                      (push (list :id id
-                                  :direction direction
-                                  :description description
-                                  :path file
-                                  :extension extension)
-                            group))))
+                                           (scanner (namestring file))
+                                           (let* ((id (parse-integer id))
+                                                  (group (gethash id acc nil)))
+                                             (setf (gethash id acc)
+                                                   (push (list :id id
+                                                               :direction direction
+                                                               :description description
+                                                               :path file
+                                                               :extension extension)
+                                                         group))))
             acc)
           files
           :initial-value (make-hash-table :test #'equal)))

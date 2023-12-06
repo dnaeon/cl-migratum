@@ -25,7 +25,7 @@
 ;; THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (in-package :cl-user)
-(defpackage :cl-migratum.driver.rdbms-postgresql
+(uiop:define-package :cl-migratum.driver.rdbms-postgresql
   (:use :cl)
   (:nicknames :migratum.driver.rdbms-postgresql)
   (:import-from
@@ -47,7 +47,7 @@
   (:import-from :log)
   (:import-from :hu.dwim.logger
    :+warn+
-   :set-log-level)
+                :set-log-level)
   (:import-from :hu.dwim.rdbms.postgresql)
   (:import-from :cl-ppcre)
   (:export
@@ -96,7 +96,7 @@ CREATE TABLE IF NOT EXISTS migration (
          (query *sql-init-schema*))
     (hu.dwim.rdbms:with-database database
       (hu.dwim.rdbms:with-transaction
-        (hu.dwim.rdbms:execute query)))
+          (hu.dwim.rdbms:execute query)))
     (setf (driver-initialized driver) t)))
 
 (defmethod driver-shutdown ((driver rdbms-postgresql-driver) &key)
@@ -126,7 +126,7 @@ CREATE TABLE IF NOT EXISTS migration (
          (query (format nil "INSERT INTO migration (id, description, kind) VALUES (~A, '~A', '~A')" id description kind)))
     (hu.dwim.rdbms:with-database db
       (hu.dwim.rdbms:with-transaction
-        (hu.dwim.rdbms:execute query)))))
+          (hu.dwim.rdbms:execute query)))))
 
 (defmethod driver-register-migration ((direction (eql :down)) (driver rdbms-postgresql-driver)
                                       migration &key)
@@ -136,7 +136,7 @@ CREATE TABLE IF NOT EXISTS migration (
          (query (format nil "DELETE FROM migration WHERE id = ~A" id)))
     (hu.dwim.rdbms:with-database db
       (hu.dwim.rdbms:with-transaction
-        (hu.dwim.rdbms:execute query)))))
+          (hu.dwim.rdbms:execute query)))))
 
 (defmethod driver-apply-migration ((direction (eql :up)) (kind (eql :sql))
                                    (driver rdbms-postgresql-driver) migration &key)
@@ -170,6 +170,6 @@ Arguments:
     (log:debug "[RDBMS-PGSQL] Applying ~A migration: ~A - ~A (~A)" direction id description kind)
     (hu.dwim.rdbms:with-database db
       (hu.dwim.rdbms:with-transaction
-        (dolist (statement statements)
-          (let ((stmt (string-trim #(#\Newline) statement)))
-            (hu.dwim.rdbms:execute stmt)))))))
+          (dolist (statement statements)
+            (let ((stmt (string-trim #(#\Newline) statement)))
+              (hu.dwim.rdbms:execute stmt)))))))

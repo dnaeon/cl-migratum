@@ -172,7 +172,7 @@
    :handler #'top-level/handler
    :pre-hook #'top-level/pre-hook))
 
-(defun main ()
+(defun main (&optional argv)
   "Main CLI entrypoint"
   (let ((app (top-level/command)))
-    (clingon:run app)))
+    (clingon:run app argv)))

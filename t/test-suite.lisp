@@ -24,7 +24,7 @@
 ;; THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (in-package :cl-user)
-(defpackage :cl-migratum.test
+(uiop:define-package :cl-migratum.test
   (:use :cl :rove)
   (:nicknames :migratum.test)
   (:import-from :tmpdir)
@@ -101,35 +101,35 @@
         default)))
 
 (setup
-  (setf *tmpdir* (tmpdir:mkdtemp))
-  (setf *sqlite-conn*
-        (cl-dbi:connect :sqlite3
-                        :database-name (merge-pathnames
-                                        (make-pathname :name "cl-migratum" :type "db")
-                                                        *tmpdir*)))
-  (setf *provider* (cl-migratum.provider.local-path:make-provider (list *migrations-path*)))
-  (setf *dbi-driver*
-        (migratum.driver.dbi:make-driver *provider* *sqlite-conn*))
-  (let ((rdbms-auth
-          (list :host (getenv "PGHOST" "localhost")
-                :port (getenv-int "PGPORT" 5432)
-                :database (getenv "RDBMS_DB" "rdbms")
-                :user-name (getenv "RDBMS_USER" "rdbms_user")
-                :password (getenv "RDMBS_PASS" "rdbms_p4ss")))
-        (postmodern-auth
-          (list :host (getenv "PGHOST" "localhost")
-                :port (getenv-int "PGPORT" 5432)
-                :database (getenv "POSTMODERN_DB" "postmodern")
-                :user-name (getenv "POSTMODERN_USER" "postmodern_user")
-                :password (getenv "POSTMODERN_PASS" "postmodern_p4ss"))))
-    (setf *postmodern-postgresql-driver*
-          (migratum.driver.postmodern-postgresql:make-driver *provider* postmodern-auth)
-          *rdbms-postgresql-driver*
-          (migratum.driver.rdbms-postgresql:make-driver *provider* rdbms-auth))))
+ (setf *tmpdir* (tmpdir:mkdtemp))
+ (setf *sqlite-conn*
+       (cl-dbi:connect :sqlite3
+                       :database-name (merge-pathnames
+                                       (make-pathname :name "cl-migratum" :type "db")
+                                       *tmpdir*)))
+ (setf *provider* (cl-migratum.provider.local-path:make-provider (list *migrations-path*)))
+ (setf *dbi-driver*
+       (migratum.driver.dbi:make-driver *provider* *sqlite-conn*))
+ (let ((rdbms-auth
+         (list :host (getenv "PGHOST" "localhost")
+               :port (getenv-int "PGPORT" 5432)
+               :database (getenv "RDBMS_DB" "rdbms")
+               :user-name (getenv "RDBMS_USER" "rdbms_user")
+               :password (getenv "RDMBS_PASS" "rdbms_p4ss")))
+       (postmodern-auth
+         (list :host (getenv "PGHOST" "localhost")
+               :port (getenv-int "PGPORT" 5432)
+               :database (getenv "POSTMODERN_DB" "postmodern")
+               :user-name (getenv "POSTMODERN_USER" "postmodern_user")
+               :password (getenv "POSTMODERN_PASS" "postmodern_p4ss"))))
+   (setf *postmodern-postgresql-driver*
+         (migratum.driver.postmodern-postgresql:make-driver *provider* postmodern-auth)
+         *rdbms-postgresql-driver*
+         (migratum.driver.rdbms-postgresql:make-driver *provider* rdbms-auth))))
 
 (teardown
-  (provider-shutdown *provider*)
-  (driver-shutdown *dbi-driver*)
-  (driver-shutdown *postmodern-postgresql-driver*)
-  (when *tmpdir*
-    (uiop:delete-directory-tree *tmpdir* :validate t)))
+ (provider-shutdown *provider*)
+ (driver-shutdown *dbi-driver*)
+ (driver-shutdown *postmodern-postgresql-driver*)
+ (when *tmpdir*
+   (uiop:delete-directory-tree *tmpdir* :validate t)))

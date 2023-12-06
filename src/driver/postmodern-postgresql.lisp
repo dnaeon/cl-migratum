@@ -25,7 +25,7 @@
 ;; THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (in-package :cl-user)
-(defpackage :cl-migratum.driver.postmodern-postgresql
+(uiop:define-package :cl-migratum.driver.postmodern-postgresql
   (:use :cl)
   (:nicknames :migratum.driver.postmodern-postgresql)
   (:import-from
@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS migration (
 (defmethod driver-init ((driver postmodern-postgresql-driver) &key)
   (log:debug "[POSTMODERN-PGSQL] Initializing ~A driver" (driver-name driver))
   (pomo:with-transaction ()
-      (pomo:query *sql-init-schema*))
+    (pomo:query *sql-init-schema*))
   (setf (driver-initialized driver) t))
 
 (defmethod driver-shutdown ((driver postmodern-postgresql-driver) &key)
@@ -126,16 +126,16 @@ CREATE TABLE IF NOT EXISTS migration (
     (let ((query (format nil "INSERT INTO migration (id, description, kind) ~
                               VALUES (~A, '~A', '~A')" id description kind)))
       (pomo:with-transaction ()
-          (pomo:query query)))))
+        (pomo:query query)))))
 
 (defmethod driver-register-migration ((direction (eql :down)) (driver postmodern-postgresql-driver)
                                       migration &key)
   (log:debug "[POSTMODERN-PGSQL] Unregistering migration: ~A" (migration-id migration))
-    (with-accessors ((id migration-id))
-        migration                      
-      (let ((query (format nil "DELETE FROM migration WHERE id = ~A" id)))
-        (pomo:with-transaction ()
-            (pomo:query query)))))
+  (with-accessors ((id migration-id))
+      migration
+    (let ((query (format nil "DELETE FROM migration WHERE id = ~A" id)))
+      (pomo:with-transaction ()
+        (pomo:query query)))))
 
 (defmethod driver-apply-migration ((direction (eql :up)) (kind (eql :sql))
                                    (driver postmodern-postgresql-driver) migration &key)
@@ -169,6 +169,6 @@ Arguments:
       (log:debug "[POSTMODERN-PGSQL] Applying ~A migration: ~A - ~A (~A)"
                  direction id description kind)
       (pomo:with-transaction ()
-          (dolist (statement statements)
-            (let ((stmt (string-trim #(#\Newline) statement)))
-              (pomo:query stmt)))))))
+        (dolist (statement statements)
+          (let ((stmt (string-trim #(#\Newline) statement)))
+            (pomo:query stmt)))))))

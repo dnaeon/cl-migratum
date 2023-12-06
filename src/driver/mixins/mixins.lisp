@@ -24,7 +24,7 @@
 ;; THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (in-package :cl-user)
-(defpackage :cl-migratum.driver.mixins
+(uiop:define-package :cl-migratum.driver.mixins
   (:nicknames :migratum.driver.mixins)
   (:use :cl)
   (:import-from

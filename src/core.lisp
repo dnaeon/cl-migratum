@@ -24,7 +24,7 @@
 ;; THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (in-package :cl-user)
-(defpackage :cl-migratum.core
+(uiop:define-package :cl-migratum.core
   (:use :cl)
   (:nicknames :migratum.core)
   (:import-from :ascii-table)

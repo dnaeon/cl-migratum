@@ -1,0 +1,19 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#|
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  #+quicklisp(ql:quickload '(:cl-migratum.cli) :silent t)
+  )
+
+(defpackage :ros.script.migratum.3910874952
+  (:use :cl))
+
+(in-package :ros.script.migratum.3910874952)
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (cl-migratum.cli:main argv))
+;;; vim: set ft=lisp lisp:

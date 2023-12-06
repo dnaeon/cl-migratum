@@ -24,7 +24,7 @@
 ;; THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (in-package :cl-user)
-(defpackage :cl-migratum.driver.dbi
+(uiop:define-package :cl-migratum.driver.dbi
   (:use :cl)
   (:nicknames :migratum.driver.dbi)
   (:import-from

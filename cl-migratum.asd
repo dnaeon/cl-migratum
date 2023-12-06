@@ -18,6 +18,7 @@
   :depends-on (:local-time
                :cl-ascii-table
                :cl-reexport
+               :uiop
                :log4cl)
   :components ((:module "util"
                 :pathname #P"src/"
