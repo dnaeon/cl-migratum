@@ -57,7 +57,7 @@ jobs:
           - 5432:5432
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Run tests
         run: |
           env LISP=${{ matrix.command }} ./scripts/run-ci-tests.sh
